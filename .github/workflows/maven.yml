@@ -74,7 +74,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: ./src/main/docker/Dockerfile.native
+        file: ./src/main/docker/Dockerfile
         platforms: linux/amd64
         push: ${{ github.event_name == 'push' }}
         tags: ${{ steps.meta.outputs.tags }}
