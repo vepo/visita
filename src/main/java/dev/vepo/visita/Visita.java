@@ -3,6 +3,7 @@ package dev.vepo.visita;
 import java.time.LocalDateTime;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,5 +26,6 @@ public class Visita extends PanacheEntityBase {
     public LocalDateTime dataSaida;
     public Long duracao; // em segundos
     
+    @RegisterForReflection
     public static record VisitaDiaria(String data, Long visitas, Long tempoMedio) {}
 }
