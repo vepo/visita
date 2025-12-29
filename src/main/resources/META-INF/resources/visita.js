@@ -29,7 +29,7 @@ function getTabId() {
     let userId = loadUserId();
     let tabId = getTabId();
     
-    const API_URL = '//visita.vepo.dev/api/visita';
+    const API_URL = `${window.location.protocol}//visita.vepo.dev/api/visita`;
     let visitaId = null;
     let isUnloading = false;
     
