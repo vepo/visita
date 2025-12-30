@@ -5,6 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
     - uses: browser-actions/setup-chrome@b94431e051d1c52dcbe9a7092a4f10f827795416
     - run: chrome --version
     - uses: actions/checkout@v4
