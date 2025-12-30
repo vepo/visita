@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Other Test Page</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .button { margin: 5px; padding: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Other page</h1>
+    <button id="done" class="button" disabled>Done</button>
+    <script>
+
+        setTimeout(()=>{
+            document.getElementById('done').disabled = false;
+        }, 2000);
+    </script>
+</body>
+</html>

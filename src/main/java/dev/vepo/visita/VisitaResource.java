@@ -43,6 +43,7 @@ public class VisitaResource {
     @POST
     @Path("/saida")
     public Response registrarSaida(FinalizarVisitaRequest request) {
+        logger.info("Registrando saída! request={}", request);
         visitaService.registrarSaida(request.id());
         return Response.ok().build();
     }
