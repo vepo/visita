@@ -7,16 +7,13 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: write
-  id-token: write
-  actions: read
-  checks: write
-  pull-requests: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      checks: write
     steps:
     - uses: actions/checkout@v4
     
@@ -41,7 +38,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-    
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
     - uses: actions/checkout@v4
     
