@@ -13,11 +13,11 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "visitas")
 public class Visita extends PanacheEntityBase {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
-    
+
     public String pagina;
     public String referer;
     public String userAgent;
@@ -25,7 +25,7 @@ public class Visita extends PanacheEntityBase {
     public LocalDateTime dataAcesso;
     public LocalDateTime dataSaida;
     public Long duracao; // em segundos
-    
+
     @RegisterForReflection
     public static record VisitaDiaria(String data, Long visitas, Long tempoMedio) {}
 }

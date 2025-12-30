@@ -18,8 +18,12 @@ import jakarta.ws.rs.core.Response;
 public class VisitaResource {
     private static final Logger logger = LoggerFactory.getLogger(VisitaResource.class);
 
+    private final VisitaService visitaService;
+    
     @Inject
-    VisitaService visitaService;
+    public VisitaResource(VisitaService visitaService) {
+        this.visitaService = visitaService;
+    }
 
     public static record IniciarVisitaRequest(String language, String pagina, String referer, String screenResolution,
             String tabId, long timestamp, String timezone, String userAgent, String userId) {
