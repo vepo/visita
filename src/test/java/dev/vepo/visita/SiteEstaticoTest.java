@@ -45,7 +45,6 @@ class SiteEstaticoTest {
         wait.until(d -> d.findElement(By.id("done")).isEnabled());
         driver.navigate().to(SiteEstaticoTest.class.getClassLoader().getResource("/other-static-page.html"));
         wait.until(d -> d.getTitle().equals("Other Test Page"));
-        Thread.sleep(Duration.ofSeconds(2));
         wait.until(d -> d.findElement(By.id("done")).isEnabled());
         Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
         var visita = Visita.<Visita>findAll().firstResult();
