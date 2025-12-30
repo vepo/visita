@@ -17,6 +17,9 @@ public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, Pa
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         var options = new ChromeOptions();
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--headless");
         options.addArguments("--allow-file-access-from-files");
         options.addArguments("--disable-web-security");
         options.addArguments("--allow-running-insecure-content");
