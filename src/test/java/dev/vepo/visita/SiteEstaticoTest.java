@@ -29,7 +29,7 @@ class SiteEstaticoTest {
     @Test
     void noneTest(WebDriver driver) throws InterruptedException {
         driver.get(SiteEstaticoTest.class.getClassLoader().getResource("/static-page.html").toString());
-        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         var btn = driver.findElement(By.id("button1"));
         wait.until(d -> btn.isDisplayed());
         ((JavascriptExecutor) driver).executeScript("""
@@ -42,10 +42,11 @@ class SiteEstaticoTest {
                     d.getElementsByTagName('head')[0].appendChild(script);
                 }(document));
                 """.formatted(visitaScriptUrl.toString()));
-        Thread.sleep(Duration.ofSeconds(5));
+        wait.until(d -> d.findElement(By.id("done")).isEnabled());
         driver.navigate().to(SiteEstaticoTest.class.getClassLoader().getResource("/other-static-page.html"));
         wait.until(d -> d.getTitle().equals("Other Test Page"));
         Thread.sleep(Duration.ofSeconds(2));
+        wait.until(d -> d.findElement(By.id("done")).isEnabled());
         Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
         var visita = Visita.<Visita>findAll().firstResult();
         Assertions.assertThat(visita.duracao).isGreaterThan(3);

@@ -13,6 +13,7 @@
     
     <button id="button1" class="button">Click Me</button>
     <button id="button2" class="button" disabled>Disabled Button</button>
+    <button id="done"    class="button" disabled>Done</button>
     
     <input id="text-input" type="text" value="Test Value">
     <input id="checkbox" type="checkbox" checked>
@@ -37,6 +38,9 @@
             e.preventDefault();
             document.getElementById('hidden-div').classList.toggle('hidden');
         });
+        setTimeout(()=>{
+            document.getElementById('done').disabled = false;
+        }, 5000);
     </script>
 </body>
 </html>
