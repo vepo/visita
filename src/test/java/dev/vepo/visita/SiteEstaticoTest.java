@@ -27,7 +27,7 @@ class SiteEstaticoTest {
     }
 
     @Test
-    void noneTest(WebDriver driver) throws InterruptedException {
+    void noneTest(WebDriver driver) {
         driver.get(SiteEstaticoTest.class.getClassLoader().getResource("/static-page.html").toString());
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         var btn = driver.findElement(By.id("button1"));
