@@ -1,5 +1,7 @@
 name: SonarQube
 on: [push]
+permissions:
+  contents: read
 
 jobs:
   build:
