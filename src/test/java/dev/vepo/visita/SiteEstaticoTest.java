@@ -22,6 +22,9 @@ class SiteEstaticoTest {
     @TestHTTPResource("/visita.js")
     URL visitaScriptUrl;
 
+    @TestHTTPResource("/dashboard")
+    URL dashboardUrl;
+
     public static <T> T inject(Class<T> clazz) {
         return CDI.current().select(clazz).get();
     }
@@ -49,5 +52,8 @@ class SiteEstaticoTest {
         Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
         var visita = Visita.<Visita>findAll().firstResult();
         Assertions.assertThat(visita.duracao).isGreaterThan(3);
+
+        driver.navigate().to(dashboardUrl);
+        wait.until(d -> d.findElement(By.id("visitas-por-pagina")).isDisplayed());
     }
 }
