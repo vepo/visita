@@ -13,11 +13,16 @@ import io.quarkus.qute.TemplateInstance;
 @Path("/dashboard")
 public class DashboardResource {
     
-    @Inject
-    Template dashboard;
+    private final Template dashboard;
     
+    
+    private final VisitaService visitaService;
+
     @Inject
-    VisitaService visitaService;
+    public DashboardResource(VisitaService visitaService, Template dashboard) {
+        this.visitaService = visitaService;
+        this.dashboard = dashboard;
+    }
     
     @GET
     @Produces(MediaType.TEXT_HTML)
