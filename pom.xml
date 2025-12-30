@@ -17,6 +17,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.platform.version>3.30.5</quarkus.platform.version>
         <DEPLOY_DOMAIN>localhost:8080</DEPLOY_DOMAIN>
+
+        <sonar.organization>vepo-github</sonar.organization>
     </properties>
     
     <dependencyManagement>
