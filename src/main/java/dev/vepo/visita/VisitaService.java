@@ -18,8 +18,12 @@ import jakarta.transaction.Transactional;
 public class VisitaService {
     private static final Logger logger = LoggerFactory.getLogger(VisitaService.class);
 
+    private final EntityManager entityManager;
+    
     @Inject
-    EntityManager entityManager;
+    public VisitaService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Transactional
     public Visita registrarAcesso(String pagina, String referer, String userAgent, String ip) {
