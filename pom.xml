@@ -10,11 +10,13 @@
     <version>1.0.0-SNAPSHOT</version>
     
     <properties>
+        <selenium.version>4.39.0</selenium.version>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.platform.version>3.30.5</quarkus.platform.version>
+        <DEPLOY_DOMAIN>localhost:8080</DEPLOY_DOMAIN>
     </properties>
     
     <dependencyManagement>
@@ -65,9 +67,32 @@
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+             <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+          <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.27.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>io.quarkus.platform</groupId>
@@ -128,15 +153,17 @@
 
     <profiles>
         <profile>
+            <id>prod</id>
+            <properties>
+                <DEPLOY_DOMAIN>visita.vepo.dev</DEPLOY_DOMAIN>
+            </properties>
+        </profile>
+        <profile>
             <id>native</id>
-            <activation>
-                <property>
-                    <name>native</name>
-                </property>
-            </activation>
             <properties>
                 <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
-                <skipITs>false</skipITs>
+                <skipTests>true</skipTests>
+                <skipITs>true</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
         </profile>

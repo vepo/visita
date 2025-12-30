@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .button { margin: 5px; padding: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Test Page</h1>
+    
+    <button id="button1" class="button">Click Me</button>
+    <button id="button2" class="button" disabled>Disabled Button</button>
+    
+    <input id="text-input" type="text" value="Test Value">
+    <input id="checkbox" type="checkbox" checked>
+    
+    <a id="link" href="#test">Test Link</a>
+    
+    <div id="content">Initial Content</div>
+    <div id="hidden-div" class="hidden">Hidden Content</div>
+    
+    <select id="dropdown">
+        <option value="1">Option 1</option>
+        <option value="2" selected>Option 2</option>
+        <option value="3">Option 3</option>
+    </select>
+
+    <script>
+        document.getElementById('button1').addEventListener('click', function() {
+            document.getElementById('content').textContent = 'Button Clicked!';
+        });
+        
+        document.getElementById('link').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('hidden-div').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
