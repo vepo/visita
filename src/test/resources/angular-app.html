@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR" ng-app="testApp">
+<head>
+  <meta charset="utf-8">
+  <title>Angular Test App</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+  <script>
+    angular.module('testApp', ['ngRoute'])
+      .config(['$routeProvider', function($routeProvider) {
+        $routeProvider
+          .when('/home', {
+            template: '<h2 id="page-title">Home</h2>'
+          })
+          .when('/about', {
+            template: '<h2 id="page-title">About</h2>'
+          })
+          .otherwise({
+            redirectTo: '/home'
+          });
+      }]);
+  </script>
+  <style>body { font-family: Arial, Helvetica, sans-serif; padding: 1rem; }</style>
+</head>
+<body>
+  <nav>
+    <a id="link-home" href="#/home">Home</a> |
+    <a id="link-about" href="#/about">About</a>
+  </nav>
+
+  <div ng-view class="view" id="ng-view">
+    <!-- angular view -->
+  </div>
+
+  <p id="status">Angular app ready</p>
+</body>
+</html>
