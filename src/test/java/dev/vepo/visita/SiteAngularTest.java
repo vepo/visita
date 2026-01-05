@@ -66,7 +66,8 @@ class SiteAngularTest {
         Assertions.assertThat(visitas)
                   .hasSize(2)
                   .extracting(v -> v.pagina)
-                  .containsExactlyInAnyOrder("file:///home/vepo/source/visita/target/test-classes/angular-app.html#!/about",
-                                             "file:///home/vepo/source/visita/target/test-classes/angular-app.html#!/home");
+                  .extracting(path -> path.replaceFirst(".*\\.html", ""))
+                  .containsExactlyInAnyOrder("#!/about",
+                                             "#!/home");
     }
 }

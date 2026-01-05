@@ -88,13 +88,14 @@ class SiteLatestAngularTest {
         Assertions.assertThat(visitas)
                   .hasSize(4)
                   .extracting(visita -> visita.pagina)
-                  .containsExactlyInAnyOrder("file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html",
-                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/products",
-                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/contact",
-                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/services");
+                  .extracting(path -> path.replaceFirst(".*\\.html", ""))
+                  .containsExactlyInAnyOrder("",
+                                             "#/products",
+                                             "#/contact",
+                                             "#/services");
     }
 
-    // @Test
+    @Test
     void multipleNavigationTest(WebDriver driver, ViewSession session) {
         driver.get(SiteLatestAngularTest.class.getClassLoader().getResource("/latest-angular-app.html").toString());
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
