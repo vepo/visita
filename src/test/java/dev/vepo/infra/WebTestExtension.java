@@ -34,12 +34,19 @@ public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, Pa
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().isAssignableFrom(WebDriver.class);
+        return parameterContext.getParameter().getType().isAssignableFrom(WebDriver.class) ||
+                parameterContext.getParameter().getType().isAssignableFrom(ViewSession.class);
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-        return this.driver;
+        if (parameterContext.getParameter().getType().isAssignableFrom(WebDriver.class)) {
+            return this.driver;
+        } else if (parameterContext.getParameter().getType().isAssignableFrom(ViewSession.class)) {
+            return new ViewSession(this.driver);
+        } else {
+            throw new ParameterResolutionException("Parameter not implemented!!! class=%s".formatted(parameterContext.getParameter().getType()));
+        }
     }
 }
