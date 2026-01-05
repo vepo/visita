@@ -3,13 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title>Latest Angular Test App</title>
-  <script src="https://unpkg.com/zone.js@0.16.0/fesm2015/zone.min.js"></script>
-  <script src="https://unpkg.com/@angular/core@21.0.6/fesm2022/core.mjs"></script>
-  <script src="https://unpkg.com/@angular/common@21.0.6/fesm2022/common.mjs"></script>
-  <script src="https://unpkg.com/@angular/platform-browser@21.0.6/fesm2022/platform-browser.mjs"></script>
-  <script src="https://unpkg.com/@angular/platform-browser-dynamic@21.0.6/fesm2022/platform-browser-dynamic.mjs"></script>
-  <script src="https://unpkg.com/@angular/router@21.0.6/fesm2022/router.mjs"></script>
-  <script>
+  <script type="module">
+    // Import Angular modules
+    import 'https://unpkg.com/zone.js@0.16.0/fesm2015/zone.min.js';
+    
     // Simple Angular-inspired router implementation for testing
     class Router {
       constructor() {
@@ -23,10 +20,16 @@
       }
 
       navigate(path) {
-        window.location.hash = path;
+        // Use history.pushState for HTML5 routing
+        history.pushState(null, '', this._getFullPath(path));
         this.currentPath = path;
         this.renderView(path);
         if (this.onNavigate) this.onNavigate(path);
+      }
+
+      _getFullPath(path) {
+        // For file:// protocol, we need to use hash routing
+        return `#${path}`;
       }
 
       renderView(path) {
@@ -57,15 +60,31 @@
         }
       });
 
-      // Handle hash route changes
-      window.addEventListener('hashchange', () => {
-        const path = window.location.hash.slice(1) || '/';
+      // Handle hash route changes (for file:// compatibility)
+      const handleRouteChange = () => {
+        let path = window.location.hash.slice(1) || '/';
+        // Remove any trailing slash except for root
+        if (path !== '/' && path.endsWith('/')) {
+          path = path.slice(0, -1);
+        }
+        router.currentPath = path;
         router.renderView(path);
+      };
+
+      window.addEventListener('hashchange', handleRouteChange);
+
+      // Intercept link clicks
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.tagName === 'A' && target.hasAttribute('data-route')) {
+          event.preventDefault();
+          const path = target.getAttribute('data-route');
+          router.navigate(path);
+        }
       });
 
       // Initial render
-      const initialPath = window.location.hash.slice(1) || '/';
-      router.renderView(initialPath);
+      handleRouteChange();
 
       // Expose router for navigation
       window.appRouter = router;
@@ -91,6 +110,7 @@
       display: inline-block;
       border-radius: 4px;
       transition: background-color 0.3s;
+      cursor: pointer;
     }
     nav a:hover {
       background-color: #555;
@@ -115,17 +135,38 @@
 <body>
   <div class="container">
     <nav>
-      <a id="link-dashboard" href="#!/">Dashboard</a>
-      <a id="link-products" href="#!/products">Products</a>
-      <a id="link-services" href="#!/services">Services</a>
-      <a id="link-contact" href="#!/contact">Contact</a>
+      <a id="link-dashboard" data-route="/" href="#">Dashboard</a>
+      <a id="link-products" data-route="/products" href="#">Products</a>
+      <a id="link-services" data-route="/services" href="#">Services</a>
+      <a id="link-contact" data-route="/contact" href="#">Contact</a>
     </nav>
 
     <div ng-view class="view" id="ng-view">
       <!-- angular view -->
     </div>
 
-    <p id="status">Latest Angular app ready</p>
+    <p id="status">Latest Angular app ready (File Protocol Compatible)</p>
+    
+    <script type="module">
+      // Import Angular modules after DOM is ready
+      import * as core from 'https://unpkg.com/@angular/core@21.0.6/fesm2022/core.mjs';
+      import * as common from 'https://unpkg.com/@angular/common@21.0.6/fesm2022/common.mjs';
+      import * as platformBrowser from 'https://unpkg.com/@angular/platform-browser@21.0.6/fesm2022/platform-browser.mjs';
+      import * as platformBrowserDynamic from 'https://unpkg.com/@angular/platform-browser-dynamic@21.0.6/fesm2022/platform-browser-dynamic.mjs';
+      import * as router from 'https://unpkg.com/@angular/router@21.0.6/fesm2022/router.mjs';
+      
+      // Make Angular available globally for testing
+      window.ng = {
+        core,
+        common,
+        platformBrowser,
+        platformBrowserDynamic,
+        router
+      };
+      
+      console.log('Angular modules loaded:', Object.keys(window.ng));
+      document.getElementById('status').textContent = 'Latest Angular app ready - Angular v21.0.6 loaded';
+    </script>
   </div>
 </body>
 </html>
