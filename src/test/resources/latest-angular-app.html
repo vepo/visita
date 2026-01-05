@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Latest Angular Test App</title>
+  <script src="https://unpkg.com/zone.js@0.14.2/dist/zone.js"></script>
+  <script src="https://unpkg.com/@angular/core@18.0.0/bundles/core.umd.min.js"></script>
+  <script src="https://unpkg.com/@angular/common@18.0.0/bundles/common.umd.min.js"></script>
+  <script src="https://unpkg.com/@angular/platform-browser@18.0.0/bundles/platform-browser.umd.min.js"></script>
+  <script src="https://unpkg.com/@angular/platform-browser-dynamic@18.0.0/bundles/platform-browser-dynamic.umd.min.js"></script>
+  <script src="https://unpkg.com/@angular/router@18.0.0/bundles/router.umd.min.js"></script>
+  <script>
+    // Simple Angular-inspired router implementation for testing
+    class Router {
+      constructor() {
+        this.routes = {};
+        this.currentPath = '/';
+        this.onNavigate = null;
+      }
+
+      config(routes) {
+        this.routes = routes;
+      }
+
+      navigate(path) {
+        window.location.hash = path;
+        this.currentPath = path;
+        this.renderView(path);
+        if (this.onNavigate) this.onNavigate(path);
+      }
+
+      renderView(path) {
+        const route = this.routes[path] || this.routes['/'];
+        const viewDiv = document.getElementById('ng-view');
+        if (route) {
+          viewDiv.innerHTML = route.template;
+        }
+      }
+    }
+
+    const router = new Router();
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      // Configure routes
+      router.config({
+        '/': {
+          template: '<h2 id="page-title">Dashboard</h2><p id="page-content">Welcome to the Latest Angular App</p>'
+        },
+        '/products': {
+          template: '<h2 id="page-title">Products</h2><p id="page-content">Browse our product catalog</p>'
+        },
+        '/services': {
+          template: '<h2 id="page-title">Services</h2><p id="page-content">Our professional services</p>'
+        },
+        '/contact': {
+          template: '<h2 id="page-title">Contact</h2><p id="page-content">Get in touch with us</p>'
+        }
+      });
+
+      // Handle hash route changes
+      window.addEventListener('hashchange', () => {
+        const path = window.location.hash.slice(1) || '/';
+        router.renderView(path);
+      });
+
+      // Initial render
+      const initialPath = window.location.hash.slice(1) || '/';
+      router.renderView(initialPath);
+
+      // Expose router for navigation
+      window.appRouter = router;
+    });
+  </script>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      padding: 1rem;
+      background-color: #f5f5f5;
+    }
+    nav {
+      background-color: #333;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-right: 2rem;
+      padding: 0.5rem 1rem;
+      display: inline-block;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    nav a:hover {
+      background-color: #555;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .view {
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a id="link-dashboard" href="#!/">Dashboard</a>
+      <a id="link-products" href="#!/products">Products</a>
+      <a id="link-services" href="#!/services">Services</a>
+      <a id="link-contact" href="#!/contact">Contact</a>
+    </nav>
+
+    <div ng-view class="view" id="ng-view">
+      <!-- angular view -->
+    </div>
+
+    <p id="status">Latest Angular app ready</p>
+  </div>
+</body>
+</html>
