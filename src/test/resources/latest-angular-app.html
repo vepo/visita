@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Latest Angular Test App</title>
+  <script type="module">
+    // Import Angular modules
+    import 'https://unpkg.com/zone.js@0.16.0/fesm2015/zone.min.js';
+    
+    // Simple Angular-inspired router implementation for testing
+    class Router {
+      constructor() {
+        this.routes = {};
+        this.currentPath = '/';
+        this.onNavigate = null;
+      }
+
+      config(routes) {
+        this.routes = routes;
+      }
+
+      navigate(path) {
+        // Use history.pushState for HTML5 routing
+        history.pushState(null, '', this._getFullPath(path));
+        this.currentPath = path;
+        this.renderView(path);
+        if (this.onNavigate) this.onNavigate(path);
+      }
+
+      _getFullPath(path) {
+        // For file:// protocol, we need to use hash routing
+        return `#${path}`;
+      }
+
+      renderView(path) {
+        const route = this.routes[path] || this.routes['/'];
+        const viewDiv = document.getElementById('ng-view');
+        if (route) {
+          viewDiv.innerHTML = route.template;
+        }
+      }
+    }
+
+    const router = new Router();
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      // Configure routes
+      router.config({
+        '/': {
+          template: '<h2 id="page-title">Dashboard</h2><p id="page-content">Welcome to the Latest Angular App</p>'
+        },
+        '/products': {
+          template: '<h2 id="page-title">Products</h2><p id="page-content">Browse our product catalog</p>'
+        },
+        '/services': {
+          template: '<h2 id="page-title">Services</h2><p id="page-content">Our professional services</p>'
+        },
+        '/contact': {
+          template: '<h2 id="page-title">Contact</h2><p id="page-content">Get in touch with us</p>'
+        }
+      });
+
+      // Handle hash route changes (for file:// compatibility)
+      const handleRouteChange = () => {
+        let path = window.location.hash.slice(1) || '/';
+        // Remove any trailing slash except for root
+        if (path !== '/' && path.endsWith('/')) {
+          path = path.slice(0, -1);
+        }
+        router.currentPath = path;
+        router.renderView(path);
+      };
+
+      window.addEventListener('hashchange', handleRouteChange);
+
+      // Intercept link clicks
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.tagName === 'A' && target.hasAttribute('data-route')) {
+          event.preventDefault();
+          const path = target.getAttribute('data-route');
+          router.navigate(path);
+        }
+      });
+
+      // Initial render
+      handleRouteChange();
+
+      // Expose router for navigation
+      window.appRouter = router;
+    });
+  </script>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      padding: 1rem;
+      background-color: #f5f5f5;
+    }
+    nav {
+      background-color: #333;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-right: 2rem;
+      padding: 0.5rem 1rem;
+      display: inline-block;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    nav a:hover {
+      background-color: #555;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .view {
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a id="link-dashboard" data-route="/" href="#">Dashboard</a>
+      <a id="link-products" data-route="/products" href="#">Products</a>
+      <a id="link-services" data-route="/services" href="#">Services</a>
+      <a id="link-contact" data-route="/contact" href="#">Contact</a>
+    </nav>
+
+    <div ng-view class="view" id="ng-view">
+      <!-- angular view -->
+    </div>
+
+    <p id="status">Latest Angular app ready (File Protocol Compatible)</p>
+    
+    <script type="module">
+      // Import Angular modules after DOM is ready
+      import * as core from 'https://unpkg.com/@angular/core@21.0.6/fesm2022/core.mjs';
+      import * as common from 'https://unpkg.com/@angular/common@21.0.6/fesm2022/common.mjs';
+      import * as platformBrowser from 'https://unpkg.com/@angular/platform-browser@21.0.6/fesm2022/platform-browser.mjs';
+      import * as platformBrowserDynamic from 'https://unpkg.com/@angular/platform-browser-dynamic@21.0.6/fesm2022/platform-browser-dynamic.mjs';
+      import * as router from 'https://unpkg.com/@angular/router@21.0.6/fesm2022/router.mjs';
+      
+      // Make Angular available globally for testing
+      window.ng = {
+        core,
+        common,
+        platformBrowser,
+        platformBrowserDynamic,
+        router
+      };
+      
+      console.log('Angular modules loaded:', Object.keys(window.ng));
+      document.getElementById('status').textContent = 'Latest Angular app ready - Angular v21.0.6 loaded';
+    </script>
+  </div>
+</body>
+</html>
