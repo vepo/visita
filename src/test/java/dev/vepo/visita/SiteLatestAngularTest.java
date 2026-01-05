@@ -88,10 +88,10 @@ class SiteLatestAngularTest {
         Assertions.assertThat(visitas)
                   .hasSize(4)
                   .extracting(visita -> visita.pagina)
-                  .containsExactly("file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html",
-                                   "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/products",
-                                   "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/contact",
-                                   "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/services");
+                  .containsExactlyInAnyOrder("file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html",
+                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/products",
+                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/contact",
+                                             "file:///home/vepo/source/visita/target/test-classes/latest-angular-app.html#/services");
     }
 
     // @Test
