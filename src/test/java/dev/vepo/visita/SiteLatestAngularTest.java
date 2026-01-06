@@ -1,7 +1,5 @@
 package dev.vepo.visita;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.net.URL;
 import java.time.Duration;
 
@@ -14,11 +12,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.infra.Given;
 import dev.vepo.infra.ViewSession;
 import dev.vepo.infra.WebTest;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 @WebTest
@@ -26,16 +25,12 @@ class SiteLatestAngularTest {
     @TestHTTPResource("/visita.js")
     URL visitaScriptUrl;
 
+    @Inject
+    private VisitaRepository visitaRepository;
+
     @BeforeEach
     void cleanup() {
-        try {
-            QuarkusTransaction.begin();
-            Visita.deleteAll();
-            QuarkusTransaction.commit();
-        } catch (Exception e) {
-            QuarkusTransaction.rollback();
-            fail("Fail to create transaction!", e);
-        }
+        Given.cleanDatabase();
     }
 
     @Test
@@ -51,7 +46,7 @@ class SiteLatestAngularTest {
         var sessionId = ((Number) ((JavascriptExecutor) driver).executeScript("return window.VisitaAnalytics.getSessionId();")).intValue();
 
         // initial access should have created a visit
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(1);
 
         // Navigate within SPA to the 'Products' route
         var productsLink = driver.findElement(By.id("link-products"));
@@ -65,7 +60,7 @@ class SiteLatestAngularTest {
                 .equals(Boolean.TRUE));
 
         // Should still be on the same visit (no new visita created yet)
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(2);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(2);
 
         // Navigate to Services route
         var servicesLink = driver.findElement(By.id("link-services"));
@@ -75,7 +70,7 @@ class SiteLatestAngularTest {
         wait.until(d -> d.findElement(By.id("page-title")).getText().equals("Services"));
 
         // Still the same visit
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(3);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(3);
 
         // Navigate to Contact route
         var contactLink = driver.findElement(By.id("link-contact"));
@@ -84,10 +79,10 @@ class SiteLatestAngularTest {
         // wait until the view updates to Contact
         wait.until(d -> d.findElement(By.id("page-title")).getText().equals("Contact"));
 
-        var visitas = Visita.<Visita>findAll().list();
+        var visitas = visitaRepository.findAll();
         Assertions.assertThat(visitas)
                   .hasSize(4)
-                  .extracting(visita -> visita.pagina)
+                  .extracting(Visita::getPagina)
                   .extracting(path -> path.replaceFirst(".*\\.html", ""))
                   .containsExactlyInAnyOrder("",
                                              "#/products",
@@ -106,7 +101,7 @@ class SiteLatestAngularTest {
         wait.until(d -> session.isScriptLoaded());
 
         // initial access should have created a visit
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(1);
 
         // Perform multiple navigations
         String[] routes = { "link-products", "link-services", "link-contact", "link-dashboard" };
@@ -118,7 +113,7 @@ class SiteLatestAngularTest {
         }
 
         // Should still have only 1 visita (navigation within same session)
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(5);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(5);
 
         // Verify we're at the dashboard
         Assertions.assertThat(driver.findElement(By.id("page-title")).getText()).isEqualTo("Dashboard");

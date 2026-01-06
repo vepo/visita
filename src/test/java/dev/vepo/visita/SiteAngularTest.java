@@ -1,7 +1,5 @@
 package dev.vepo.visita;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.net.URL;
 import java.time.Duration;
 
@@ -13,11 +11,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.infra.Given;
 import dev.vepo.infra.ViewSession;
 import dev.vepo.infra.WebTest;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 @WebTest
@@ -25,16 +24,12 @@ class SiteAngularTest {
     @TestHTTPResource("/visita.js")
     URL visitaScriptUrl;
 
+    @Inject
+    private VisitaRepository visitaRepository;
+
     @BeforeEach
     void cleanup() {
-        try {
-            QuarkusTransaction.begin();
-            Visita.deleteAll();
-            QuarkusTransaction.commit();
-        } catch (Exception e) {
-            QuarkusTransaction.rollback();
-            fail("Fail to create transaction!", e);
-        }
+        Given.cleanDatabase();
     }
 
     @Test
@@ -48,7 +43,7 @@ class SiteAngularTest {
         wait.until(d -> session.isScriptLoaded());
 
         // initial access should have created a visit
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(1);
 
         // Navigate within SPA to the 'About' route
         var aboutLink = driver.findElement(By.id("link-about"));
@@ -62,10 +57,10 @@ class SiteAngularTest {
         wait.until(d -> d.getTitle().equals("Other Test Page"));
         wait.until(d -> d.findElement(By.id("done")).isEnabled());
 
-        var visitas = Visita.<Visita>findAll().list();
+        var visitas = visitaRepository.findAll();
         Assertions.assertThat(visitas)
                   .hasSize(2)
-                  .extracting(v -> v.pagina)
+                  .extracting(Visita::getPagina)
                   .extracting(path -> path.replaceFirst(".*\\.html", ""))
                   .containsExactlyInAnyOrder("#!/about",
                                              "#!/home");

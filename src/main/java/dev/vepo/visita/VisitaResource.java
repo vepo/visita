@@ -46,7 +46,7 @@ public class VisitaResource {
         logger.info("Registrando acesso! request={}", request);
         var visita = visitaService.registrarAcesso(request.page(), request.referer(), request.userAgent(),
                                                    request.timezone());
-        return new IniciarVisitaResponse(visita.id);
+        return new IniciarVisitaResponse(visita.getId());
     }
 
     @POST
@@ -63,7 +63,7 @@ public class VisitaResource {
         logger.info("Registrando view! request={}", request);
         var view = visitaService.registerView(request.id(), request.page());
         if (Objects.nonNull(view)) {
-            return new ViewResponse(view.id);
+            return new ViewResponse(view.getId());
         } else {
             throw new NotFoundException("View not found!!! id=%s".formatted(request.id()));
         }

@@ -1,7 +1,5 @@
 package dev.vepo.visita;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.net.URL;
 import java.time.Duration;
 
@@ -14,10 +12,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import dev.vepo.infra.Given;
 import dev.vepo.infra.WebTest;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 @WebTest
@@ -28,16 +27,12 @@ class SiteEstaticoTest {
     @TestHTTPResource("/dashboard")
     URL dashboardUrl;
 
+    @Inject
+    private VisitaRepository visitaRepository;
+
     @BeforeEach
     void cleanup() {
-        try {
-            QuarkusTransaction.begin();
-            Visita.deleteAll();
-            QuarkusTransaction.commit();
-        } catch (Exception e) {
-            QuarkusTransaction.rollback();
-            fail("Fail to create transaction!", e);
-        }
+        Given.cleanDatabase();
     }
 
     @Test
@@ -60,9 +55,9 @@ class SiteEstaticoTest {
         driver.navigate().to(SiteEstaticoTest.class.getClassLoader().getResource("/other-static-page.html"));
         wait.until(d -> d.getTitle().equals("Other Test Page"));
         wait.until(d -> d.findElement(By.id("done")).isEnabled());
-        Assertions.assertThat(Visita.findAll().count()).isEqualTo(1);
-        var visita = Visita.<Visita>findAll().firstResult();
-        Assertions.assertThat(visita.duracao).isGreaterThan(3);
+        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(1);
+        var visita = visitaRepository.findAll().get(0);
+        Assertions.assertThat(visita.getDuracao()).isGreaterThan(3);
 
         driver.navigate().to(dashboardUrl);
         wait.until(d -> d.findElement(By.id("visitas-por-pagina")).isDisplayed());
