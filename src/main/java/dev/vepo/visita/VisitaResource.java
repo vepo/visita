@@ -33,7 +33,7 @@ public class VisitaResource {
 
     public static record IniciarVisitaRequest(String language,
                                               @NotBlank String page,
-                                              String referer,
+                                              String referrer,
                                               String screenResolution,
                                               @NotBlank String tabId,
                                               @NotNull @Min(1) long timestamp,
@@ -61,7 +61,7 @@ public class VisitaResource {
     @Path("/access")
     public IniciarVisitaResponse access(@Valid IniciarVisitaRequest request) {
         logger.info("Registrando acesso! request={}", request);
-        var visita = visitaService.registrarAcesso(request.page(), request.referer(), request.userAgent(),
+        var visita = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
                                                    request.timezone(), request.timestamp());
         return new IniciarVisitaResponse(visita.getId());
     }
