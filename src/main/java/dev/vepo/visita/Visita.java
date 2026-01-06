@@ -24,7 +24,7 @@ public class Visita {
     @Column(name = "page")
     private String pagina;
 
-    private String referer;
+    private String referrer;
 
     @Column(name = "user_agent")
     private String userAgent;
@@ -42,9 +42,9 @@ public class Visita {
 
     public Visita() {}
 
-    public Visita(String page, String referer, String userAgent, String timezone, long timestamp) {
+    public Visita(String page, String referrer, String userAgent, String timezone, long timestamp) {
         this.pagina = page;
-        this.referer = referer;
+        this.referrer = referrer;
         this.timezone = timezone;
         this.userAgent = userAgent;
         this.dataAcesso = Instant.ofEpochMilli(timestamp)
@@ -54,7 +54,7 @@ public class Visita {
 
     public Visita(String page, long timestamp, Visita extended) {
         this.pagina = page;
-        this.referer = extended.referer;
+        this.referrer = extended.referrer;
         this.userAgent = extended.userAgent;
         this.timezone = extended.timezone;
         this.dataAcesso = Instant.ofEpochMilli(timestamp)
@@ -82,12 +82,12 @@ public class Visita {
         return Objects.equals(pagina, page);
     }
 
-    public String getReferer() {
-        return referer;
+    public String getReferrer() {
+        return referrer;
     }
 
-    public void setReferer(String referer) {
-        this.referer = referer;
+    public void setReferrer(String referrer) {
+        this.referrer = referrer;
     }
 
     public String getUserAgent() {
@@ -157,7 +157,7 @@ public class Visita {
 
     @Override
     public String toString() {
-        return "Visita [id=%s, pagina=%s, referer=%s, userAgent=%s, timezone=%s, dataAcesso=%s, dataSaida=%s, duracao=%s]".formatted(id, pagina, referer,
+        return "Visita [id=%s, pagina=%s, referrer=%s, userAgent=%s, timezone=%s, dataAcesso=%s, dataSaida=%s, duracao=%s]".formatted(id, pagina, referrer,
                                                                                                                                      userAgent,
                                                                                                                                      timezone, dataAcesso,
                                                                                                                                      dataSaida,
