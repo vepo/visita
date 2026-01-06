@@ -6,6 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
@@ -27,22 +31,35 @@ public class VisitaResource {
         this.visitaService = visitaService;
     }
 
-    public static record IniciarVisitaRequest(String language, String page, String referer, String screenResolution,
-                                              String tabId, long timestamp, String timezone, String userAgent, String userId) {}
+    public static record IniciarVisitaRequest(String language,
+                                              @NotBlank String page,
+                                              String referer,
+                                              String screenResolution,
+                                              @NotBlank String tabId,
+                                              @NotNull @Min(1) long timestamp,
+                                              String timezone,
+                                              String userAgent,
+                                              @NotBlank String userId) {}
 
-    public static record FinalizarVisitaRequest(long id, long timestamp) {}
+    public static record FinalizarVisitaRequest(@NotNull long id,
+                                                @NotNull @Min(1) long timestamp) {}
 
-    public static record PingVisitaRequest(long id, long timestamp) {}
+    public static record PingVisitaRequest(@NotNull long id,
+                                           @NotNull @Min(1) long timestamp) {}
 
     public static record IniciarVisitaResponse(long id) {}
 
-    public static record ViewVisitaResponse(long id, String page, String tabId, long timestamp, String userId) {}
+    public static record ViewVisitaResponse(@NotNull long id,
+                                            @NotBlank String page,
+                                            @NotBlank String tabId,
+                                            @NotNull @Min(1) long timestamp,
+                                            @NotBlank String userId) {}
 
     public static record ViewResponse(long id) {}
 
     @POST
     @Path("/access")
-    public IniciarVisitaResponse access(IniciarVisitaRequest request) {
+    public IniciarVisitaResponse access(@Valid IniciarVisitaRequest request) {
         logger.info("Registrando acesso! request={}", request);
         var visita = visitaService.registrarAcesso(request.page(), request.referer(), request.userAgent(),
                                                    request.timezone(), request.timestamp());
@@ -51,7 +68,7 @@ public class VisitaResource {
 
     @POST
     @Path("/exit")
-    public Response exit(FinalizarVisitaRequest request) {
+    public Response exit(@Valid FinalizarVisitaRequest request) {
         logger.info("Registrando saída! request={}", request);
         visitaService.registrarSaida(request.id(), request.timestamp());
         return Response.ok().build();
@@ -59,7 +76,7 @@ public class VisitaResource {
 
     @POST
     @Path("/view")
-    public ViewResponse view(ViewVisitaResponse request) {
+    public ViewResponse view(@Valid ViewVisitaResponse request) {
         logger.info("Registrando view! request={}", request);
         var view = visitaService.registerView(request.id(), request.page(), request.timestamp());
         if (Objects.nonNull(view)) {
@@ -71,8 +88,8 @@ public class VisitaResource {
 
     @POST
     @Path("/ping")
-    public Response ping(PingVisitaRequest request) {
-        logger.info("Registrando saída! request={}", request);
+    public Response ping(@Valid PingVisitaRequest request) {
+        logger.info("Registrando ping! request={}", request);
         visitaService.registraPing(request.id(), request.timestamp());
         return Response.ok().build();
     }
