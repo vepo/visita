@@ -90,7 +90,7 @@ public class VisitaService {
                               COUNT(v.id) as visitas,
                               AVG(v.duracao) as tempoMedio
                        FROM Visita v
-                       WHERE v.dataAcesso IS NOT NULL
+                       WHERE v.dataAcesso IS NOT NULL AND v.duracao IS NOT NULL
                        GROUP BY DATE(v.dataAcesso)
                        ORDER BY DATE(v.dataAcesso) DESC
                        """;
@@ -109,7 +109,7 @@ public class VisitaService {
                               COUNT(v.id) as visitas,
                               AVG(v.duracao) as tempoMedio
                        FROM Visita v
-                       WHERE v.pagina IS NOT NULL
+                       WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
                        GROUP BY v.pagina
                        ORDER BY visitas DESC
                        """;
