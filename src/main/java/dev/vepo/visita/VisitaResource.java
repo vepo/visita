@@ -30,9 +30,9 @@ public class VisitaResource {
     public static record IniciarVisitaRequest(String language, String page, String referer, String screenResolution,
                                               String tabId, long timestamp, String timezone, String userAgent, String userId) {}
 
-    public static record FinalizarVisitaRequest(long id) {}
+    public static record FinalizarVisitaRequest(long id, long timestamp) {}
 
-    public static record PingVisitaRequest(long id) {}
+    public static record PingVisitaRequest(long id, long timestamp) {}
 
     public static record IniciarVisitaResponse(long id) {}
 
@@ -45,7 +45,7 @@ public class VisitaResource {
     public IniciarVisitaResponse access(IniciarVisitaRequest request) {
         logger.info("Registrando acesso! request={}", request);
         var visita = visitaService.registrarAcesso(request.page(), request.referer(), request.userAgent(),
-                                                   request.timezone());
+                                                   request.timezone(), request.timestamp());
         return new IniciarVisitaResponse(visita.getId());
     }
 
@@ -53,7 +53,7 @@ public class VisitaResource {
     @Path("/exit")
     public Response exit(FinalizarVisitaRequest request) {
         logger.info("Registrando saída! request={}", request);
-        visitaService.registrarSaida(request.id());
+        visitaService.registrarSaida(request.id(), request.timestamp());
         return Response.ok().build();
     }
 
@@ -61,7 +61,7 @@ public class VisitaResource {
     @Path("/view")
     public ViewResponse view(ViewVisitaResponse request) {
         logger.info("Registrando view! request={}", request);
-        var view = visitaService.registerView(request.id(), request.page());
+        var view = visitaService.registerView(request.id(), request.page(), request.timestamp());
         if (Objects.nonNull(view)) {
             return new ViewResponse(view.getId());
         } else {
@@ -73,7 +73,7 @@ public class VisitaResource {
     @Path("/ping")
     public Response ping(PingVisitaRequest request) {
         logger.info("Registrando saída! request={}", request);
-        visitaService.registraPing(request.id());
+        visitaService.registraPing(request.id(), request.timestamp());
         return Response.ok().build();
     }
 }
