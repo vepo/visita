@@ -331,8 +331,7 @@ class VisitaAnalytics {
             id: this.identifiers.visitaId,
             userId: this.identifiers.userId,
             tabId: this.identifiers.tabId,
-            timestamp: Date.now(),
-            inactiveDuration: Date.now() - this.state.lastActivity
+            timestamp: Date.now()
         };
 
         try {
@@ -350,9 +349,13 @@ class VisitaAnalytics {
 
     async sendPing() {
         if (!this.identifiers.visitaId) return;
+        const pingData = { 
+            id: this.identifiers.visitaId,
+            timestamp: Date.now()
+        };
 
         try {
-            var response = await this.sendRequest(this.API_ENDPOINTS.PING, { id: this.identifiers.visitaId }, { no_body: true});
+            var response = await this.sendRequest(this.API_ENDPOINTS.PING, pingData , { no_body: true});
             console.debug("Ping sent!", response);
         } catch (error) {
             console.error('Failed to track page view:', error);
