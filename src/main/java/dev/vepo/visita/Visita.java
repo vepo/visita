@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,28 +12,39 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "visitas")
+@Table(name = "tb_views")
 public class Visita {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(name = "page")
     private String pagina;
+    
     private String referer;
+    
+    @Column(name = "user_agent")
     private String userAgent;
-    private String ip;
+    
+    @Column(name = "access_timestamp")
     private LocalDateTime dataAcesso;
+    
+    @Column(name = "end_timestamp")
     private LocalDateTime dataSaida;
+    
+    @Column(name = "length")
+    private Long duracao; // em segundos
 
-    public Long duracao; // em segundos
+    private String timezone;
 
     public Visita() {}
 
-    public Visita(String page, String referer, String userAgent, String ip) {
+    public Visita(String page, String referer, String userAgent, String timezone) {
         this.pagina = page;
         this.referer = referer;
+        this.timezone = timezone;
         this.userAgent = userAgent;
-        this.ip = ip;
         this.dataAcesso = LocalDateTime.now();
     }
 
@@ -40,7 +52,7 @@ public class Visita {
         this.pagina = page;
         this.referer = extended.referer;
         this.userAgent = extended.userAgent;
-        this.ip = extended.ip;
+        this.timezone = extended.timezone;
         this.dataAcesso = LocalDateTime.now();
     }
 
@@ -80,12 +92,12 @@ public class Visita {
         this.userAgent = userAgent;
     }
 
-    public String getIp() {
-        return ip;
+    public String getTimezone() {
+        return timezone;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 
     public LocalDateTime getDataAcesso() {
@@ -137,8 +149,8 @@ public class Visita {
 
     @Override
     public String toString() {
-        return "Visita [id=%s, pagina=%s, referer=%s, userAgent=%s, ip=%s, dataAcesso=%s, dataSaida=%s, duracao=%s]".formatted(id, pagina, referer, userAgent,
-                                                                                                                               ip, dataAcesso, dataSaida,
+        return "Visita [id=%s, pagina=%s, referer=%s, userAgent=%s, timezone=%s, dataAcesso=%s, dataSaida=%s, duracao=%s]".formatted(id, pagina, referer, userAgent,
+                                                                                                                               timezone, dataAcesso, dataSaida,
                                                                                                                                duracao);
     }
 }
