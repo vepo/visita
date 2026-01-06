@@ -43,7 +43,7 @@ class SiteAngularTest {
         wait.until(d -> session.isScriptLoaded());
 
         // initial access should have created a visit
-        Assertions.assertThat(visitaRepository.findAll().size()).isEqualTo(1);
+        Assertions.assertThat(visitaRepository.findAll()).hasSize(1);
 
         // Navigate within SPA to the 'About' route
         var aboutLink = driver.findElement(By.id("link-about"));
