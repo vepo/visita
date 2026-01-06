@@ -285,9 +285,8 @@ MIT License - Veja [LICENSE](LICENSE) para detalhes.
 ## 🌐 Suporte
 
 ### Documentação Online
-- **Repositório**: [github.com/seu-usuario/visita-analytics](https://github.com/seu-usuario/visita-analytics)
+- **Repositório**: [github.com/vepo/visita](https://github.com/vepo/visita)
 - **Demo**: [visita.vepo.dev](https://visita.vepo.dev)
-- **Exemplos**: [visita.vepo.dev/examples](https://visita.vepo.dev/examples)
 
 ### Canais de Ajuda
 1. **Issues do GitHub** - Para bugs e feature requests
