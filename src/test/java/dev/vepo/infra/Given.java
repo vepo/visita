@@ -15,13 +15,21 @@ public abstract class Given {
     }
 
     public static void cleanDatabase() {
+        withTransaction(() -> inject(GivenRepository.class).cleanup());
+    }
+
+    public static void withTransaction(Runnable block) {
         try {
             QuarkusTransaction.begin();
-            inject(GivenRepository.class).cleanup();
+            block.run();
             QuarkusTransaction.commit();
         } catch (Exception e) {
             QuarkusTransaction.rollback();
             fail("Fail to create transaction!", e);
         }
+    }
+
+    public static VisitaBuilder visita() {
+        return new VisitaBuilder();
     }
 }
