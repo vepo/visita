@@ -48,7 +48,9 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Médio (s)</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P70</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P90</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Médio</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -56,6 +58,8 @@
                             <tr>
                                 <td class="px-4 py-3 text-sm text-gray-900">{visita.data}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{visita.visitas}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg70.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg90.formatSecondsToHHMMSS}</td>
                                 <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.tempoMedio.formatSecondsToHHMMSS}</td>
                             </tr>
                             {/for}
@@ -72,7 +76,9 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Página</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Médio (s)</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P70</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P90</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Médio</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -80,6 +86,8 @@
                             <tr>
                                 <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{visita.pagina}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{visita.visitas}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg70.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg90.formatSecondsToHHMMSS}</td>
                                 <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.tempoMedio.formatSecondsToHHMMSS}</td>
                             </tr>
                             {/for}

@@ -1,6 +1,6 @@
 package dev.vepo.visita.dashboard;
 
-import dev.vepo.visita.VisitaDiaria;
+import dev.vepo.visita.EstatisticaPorDia;
 import dev.vepo.visita.VisitaService;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -30,7 +30,7 @@ public class DashboardResource {
         var visitasPorPagina = visitaService.getVisitasPorPagina();
 
         long totalVisitas = visitasDiarias.stream()
-                                          .mapToLong(VisitaDiaria::visitas)
+                                          .mapToLong(EstatisticaPorDia::visitas)
                                           .sum();
 
         return dashboard.data("visitasDiarias", visitasDiarias)

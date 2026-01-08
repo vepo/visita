@@ -25,37 +25,35 @@ public class VisitaRepository {
         return this.entityManager.find(Visita.class, id);
     }
 
-    public List<VisitaDiaria> findDailyViews() {
+    public List<EstatisticaPorDia> findDailyViews() {
         return entityManager.createQuery("""
-                                         SELECT DATE(v.dataAcesso) as data,
-                                                COUNT(v.id) as visitas,
-                                                AVG(v.duracao) as tempoMedio
+                                         SELECT new EstatisticaPorDia(DATE(v.dataAcesso),
+                                                                      COUNT(v.id),
+                                                                      AVG(v.duracao),
+                                                                      PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao),
+                                                                      PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao))
                                          FROM Visita v
                                          WHERE v.dataAcesso IS NOT NULL AND v.duracao IS NOT NULL
                                          GROUP BY DATE(v.dataAcesso)
                                          ORDER BY DATE(v.dataAcesso) DESC
-                                         """, Object[].class)
+                                         """, EstatisticaPorDia.class)
                             .getResultStream()
-                            .map(result -> new VisitaDiaria(result[0].toString(),
-                                                            (Long) result[1],
-                                                            result[2] != null ? Math.round((Double) result[2]) : 0L))
                             .toList();
     }
 
-    public List<Map<String, Object>> findPageViews() {
+    public List<EstatisticaPorPagina> findPageViews() {
         return entityManager.createQuery("""
-                                         SELECT v.pagina,
-                                                COUNT(v.id) as visitas,
-                                                AVG(v.duracao) as tempoMedio
+                                         SELECT new EstatisticaPorPagina(v.pagina,
+                                                                         COUNT(v.id) as visitas,
+                                                                         AVG(v.duracao) as tempoMedio,
+                                                                         PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
+                                                                         PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
                                          FROM Visita v
                                          WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
                                          GROUP BY v.pagina
                                          ORDER BY visitas DESC
-                                         """, Object[].class)
+                                         """, EstatisticaPorPagina.class)
                             .getResultStream()
-                            .map(result -> Map.of("pagina", result[0],
-                                                  "visitas", result[1],
-                                                  "tempoMedio", result[2] != null ? Math.round((Double) result[2]) : 0L))
                             .toList();
     }
 
