@@ -1,5 +1,7 @@
-package dev.vepo.visita;
+package dev.vepo.visita.dashboard;
 
+import dev.vepo.visita.VisitaDiaria;
+import dev.vepo.visita.VisitaService;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
