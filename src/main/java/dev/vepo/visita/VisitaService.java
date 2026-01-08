@@ -77,11 +77,11 @@ public class VisitaService {
         }
     }
 
-    public List<VisitaDiaria> getVisitasDiarias() {
+    public List<EstatisticaPorDia> getVisitasDiarias() {
         return visitaRepository.findDailyViews();
     }
 
-    public List<Map<String, Object>> getVisitasPorPagina() {
+    public List<EstatisticaPorPagina> getVisitasPorPagina() {
         return visitaRepository.findPageViews();
     }
 }
