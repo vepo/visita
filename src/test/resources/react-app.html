@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>React Test App</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.production.min.js"></script>
+  <style>body { font-family: Arial, Helvetica, sans-serif; padding: 1rem; }</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { HashRouter, Routes, Route, Link, useLocation } = ReactRouterDOM;
+
+    function App() {
+      return (
+        <HashRouter hashType="hashbang">
+          <nav>
+            <Link id="link-home" to="/home">Home</Link> | 
+            <Link id="link-about" to="/about">About</Link>
+          </nav>
+          <Routes>
+            <Route path="/home" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </HashRouter>
+      );
+    }
+
+    function Home() {
+      return <h2 id="page-title">Home</h2>;
+    }
+
+    function About() {
+      return <h2 id="page-title">About</h2>;
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+
+  <p id="status">React app ready</p>
+</body>
+</html>
