@@ -59,7 +59,7 @@ class DashboardTest {
                   .as("Total visits should be 3")
                   .isEqualTo("3");
 
-        // Check period analyzed card (might show 0 days if no date-based data)
+        // Check period analyzed card
         WebElement periodCard = driver.findElements(By.className("card")).get(1);
         Assertions.assertThat(periodCard.findElement(By.tagName("h2")).getText())
                   .isEqualTo("Período Analisado");
@@ -72,17 +72,39 @@ class DashboardTest {
                   .as("Should show 2 different pages")
                   .isEqualTo("2 páginas");
 
-        // Verify daily visits table structure
-        WebElement dailyVisitsTable = driver.findElement(By.xpath("//h2[text()='Visitas Diárias']/following::table[1]"));
-        Assertions.assertThat(dailyVisitsTable.findElements(By.tagName("th")))
-                  .hasSize(5)
+        // Find the "Visitas Diárias" card - now contains charts
+        WebElement dailyVisitsCard = driver.findElement(By.id("visitas-diarias"));
+
+        Assertions.assertThat(dailyVisitsCard)
+                  .as("Should find Visitas Diárias card")
+                  .isNotNull();
+
+        // Verify charts are present inside the Visitas Diárias card
+        // Look for the two chart titles
+        wait.until(d -> dailyVisitsCard.findElements(By.tagName("h3")).size() >= 2);
+
+        var chartTitles = dailyVisitsCard.findElements(By.tagName("h3"));
+        Assertions.assertThat(chartTitles)
                   .extracting(WebElement::getText)
-                  .extracting(String::toLowerCase)
-                  .containsExactly("data", "visitas", "p70", "p90", "tempo médio");
+                  .containsExactlyInAnyOrder("Número de Visitas", "Métricas de Tempo");
+
+        // Verify charts canvas elements exist
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("visitasDiariasChart")))
+                  .isNotNull();
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("tempoMedioChart")))
+                  .isNotNull();
 
         // Verify visits by page table structure
         WebElement visitsByPageTable = driver.findElement(By.xpath("//h2[text()='Visitas por Página']/following::table[1]"));
         Assertions.assertThat(visitsByPageTable.findElements(By.tagName("th")))
+                  .hasSize(5)
+                  .extracting(WebElement::getText)
+                  .extracting(String::toLowerCase)
+                  .containsExactly("página", "visitas", "p70", "p90", "tempo médio");
+
+        // Verify "Visitas por Página (Última semana)" table structure
+        WebElement visitsByPageLastWeekTable = driver.findElement(By.xpath("//h2[text()='Visitas por Página (Última semana)']/following::table[1]"));
+        Assertions.assertThat(visitsByPageLastWeekTable.findElements(By.tagName("th")))
                   .hasSize(5)
                   .extracting(WebElement::getText)
                   .extracting(String::toLowerCase)
