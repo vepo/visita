@@ -1,9 +1,9 @@
 package dev.vepo.visita;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -82,6 +82,10 @@ public class VisitaService {
     }
 
     public List<EstatisticaPorPagina> getVisitasPorPagina() {
-        return visitaRepository.findPageViews();
+        return getVisitasPorPagina(LocalDateTime.MIN);
+    }
+
+    public List<EstatisticaPorPagina> getVisitasPorPagina(LocalDateTime startDate) {
+        return visitaRepository.findPageViews(startDate);
     }
 }

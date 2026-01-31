@@ -1,5 +1,7 @@
 package dev.vepo.visita.dashboard;
 
+import java.time.LocalDateTime;
+
 import dev.vepo.visita.EstatisticaPorDia;
 import dev.vepo.visita.VisitaService;
 import io.quarkus.qute.Template;
@@ -28,6 +30,8 @@ public class DashboardResource {
     public TemplateInstance getDashboard() {
         var visitasDiarias = visitaService.getVisitasDiarias();
         var visitasPorPagina = visitaService.getVisitasPorPagina();
+        var visitasPorPaginaUltimaSemana = visitaService.getVisitasPorPagina(LocalDateTime.now()
+                                                                                          .minusDays(7));
 
         long totalVisitas = visitasDiarias.stream()
                                           .mapToLong(EstatisticaPorDia::visitas)
@@ -35,6 +39,7 @@ public class DashboardResource {
 
         return dashboard.data("visitasDiarias", visitasDiarias)
                         .data("visitasPorPagina", visitasPorPagina)
+                        .data("visitasPorPaginaUltimaSemana", visitasPorPaginaUltimaSemana)
                         .data("totalVisitas", totalVisitas);
     }
 }
