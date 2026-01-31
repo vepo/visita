@@ -43,7 +43,24 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">            
+            <div class="card col-span-1 lg:col-span-2">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas Diárias</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-600 mb-2">Número de Visitas</h3>
+                        <div class="chart-container">
+                            <canvas id="visitasDiariasChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-600 mb-2">Métricas de Tempo</h3>
+                        <div class="chart-container">
+                            <canvas id="tempoMedioChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas por Página (Última semana)</h2>
                 <div id="visitas-por-pagina" class="overflow-x-auto">
@@ -70,15 +87,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            
-            <div class="card">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas Diárias</h2>
-                <div class="chart-container">
-                    <canvas id="visitasDiariasChart"></canvas>
-                </div>
-            </div>
-            
+            </div>            
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas por Página</h2>
                 <div id="visitas-por-pagina" class="overflow-x-auto">
@@ -113,98 +122,24 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Processar dados do template Qute
-            const visitasDiariasData = [
+    <!-- Dados passados do Qute para JavaScript -->
+    <script id="visitas-data" type="application/json">
+        {
+            "visitasDiarias": [
                 {#for visita in visitasDiarias}
                 {
-                    data: '{visita.data}',
-                    visitas: {visita.visitas},
-                    avg70: '{visita.avg70.formatSecondsToHHMMSS}',
-                    avg90: '{visita.avg90.formatSecondsToHHMMSS}',
-                    tempoMedio: '{visita.tempoMedio.formatSecondsToHHMMSS}'
-                },
+                    "data": "{visita.data}",
+                    "visitas": {visita.visitas},
+                    "avg70_str": "{visita.avg70.formatSecondsToHHMMSS}",
+                    "avg90_str": "{visita.avg90.formatSecondsToHHMMSS}",
+                    "tempoMedio_str": "{visita.tempoMedio.formatSecondsToHHMMSS}"
+                }{#if visita_hasNext},{/if}
                 {/for}
-            ];
-            
-            // Extrair datas e contagens de visitas
-            const datas = visitasDiariasData.map(item => item.data);
-            const visitas = visitasDiariasData.map(item => item.visitas);
-            
-            // Configurar cores baseadas no número de visitas
-            const maxVisitas = Math.max(...visitas);
-            const minVisitas = Math.min(...visitas);
-            const cores = visitas.map(count => {
-                const intensidade = (count - minVisitas) / (maxVisitas - minVisitas || 1);
-                const red = Math.floor(59 + (136 - 59) * intensidade);
-                const green = Math.floor(130 + (47 - 130) * intensidade);
-                const blue = Math.floor(200 + (251 - 200) * intensidade);
-                return "rgba(" + red + ", " + green +", " + blue + ", 0.7)";
-            });
-            
-            // Criar gráfico de barras para visitas diárias
-            const ctx = document.getElementById('visitasDiariasChart').getContext('2d');
-            const visitasDiariasChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: datas,
-                    datasets: [{
-                        label: 'Visitas',
-                        data: visitas,
-                        backgroundColor: cores,
-                        borderColor: 'rgba(59, 130, 200, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        hoverBackgroundColor: 'rgba(59, 130, 200, 0.8)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const dataIndex = context.dataIndex;
-                                    const visitaData = visitasDiariasData[dataIndex];
-                                    return [
-                                        "Visitas: "+ visitaData.visitas,
-                                        "Tempo Médio: " + visitaData.tempoMedio,
-                                        "P70: " + visitaData.avg70,
-                                        "P90: " + visitaData.avg90
-                                    ];
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
-                            ticks: {
-                                stepSize: Math.max(1, Math.ceil(maxVisitas / 10))
-                            }
-                        }
-                    }
-                }
-            });
-        });
+            ]
+        }
     </script>
+
+    <!-- Script externo para os gráficos -->
+    <script src="/dashboard/charts.js"></script>
 </body>
 </html>
