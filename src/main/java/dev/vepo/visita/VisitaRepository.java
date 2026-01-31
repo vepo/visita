@@ -1,7 +1,7 @@
 package dev.vepo.visita;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -41,20 +41,37 @@ public class VisitaRepository {
                             .toList();
     }
 
-    public List<EstatisticaPorPagina> findPageViews() {
-        return entityManager.createQuery("""
-                                         SELECT new EstatisticaPorPagina(v.pagina,
-                                                                         COUNT(v.id) as visitas,
-                                                                         AVG(v.duracao) as tempoMedio,
-                                                                         PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
-                                                                         PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
-                                         FROM Visita v
-                                         WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
-                                         GROUP BY v.pagina
-                                         ORDER BY visitas DESC
-                                         """, EstatisticaPorPagina.class)
-                            .getResultStream()
-                            .toList();
+    public List<EstatisticaPorPagina> findPageViews(LocalDateTime startDate) {
+        if (startDate == LocalDateTime.MIN) {
+            return entityManager.createQuery("""
+                                             SELECT new EstatisticaPorPagina(v.pagina,
+                                                                             COUNT(v.id) as visitas,
+                                                                             AVG(v.duracao) as tempoMedio,
+                                                                             PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
+                                                                             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
+                                             FROM Visita v
+                                             WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
+                                             GROUP BY v.pagina
+                                             ORDER BY visitas DESC
+                                             """, EstatisticaPorPagina.class)
+                                .getResultStream()
+                                .toList();
+        } else {
+            return entityManager.createQuery("""
+                                             SELECT new EstatisticaPorPagina(v.pagina,
+                                                                             COUNT(v.id) as visitas,
+                                                                             AVG(v.duracao) as tempoMedio,
+                                                                             PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
+                                                                             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
+                                             FROM Visita v
+                                             WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL AND v.dataAcesso >= :start_date
+                                             GROUP BY v.pagina
+                                             ORDER BY visitas DESC
+                                             """, EstatisticaPorPagina.class)
+                                .setParameter("start_date", startDate)
+                                .getResultStream()
+                                .toList();
+        }
     }
 
     public List<Visita> findAll() {
