@@ -17,4 +17,12 @@ public class VisitaTemplateExtension {
 
         return String.format("%02d:%02d:%02d", hours, minutes, secs);
     }
+
+    public static String timestamp(Number value) {
+        if (value == null) {
+            return "0";
+        }
+
+        return Integer.toString(value.intValue());
+    }
 }

@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Extrair dados do elemento script
     const dataScript = document.getElementById('visitas-data');
-    const visitasData = JSON.parse(dataScript.textContent);
+    const visitasData = {
+        visitasDiarias: JSON.parse(dataScript.textContent).visitasDiarias.sort((o1, o2) => o1.data > o2.data)
+    };
     
     // Processar dados
     const datas = [];
@@ -16,35 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
         visitas.push(item.visitas);
         
         // Converter tempo de string HH:MM:SS para segundos
-        avg70Values.push(parseTimeToSeconds(item.avg70_str));
-        avg90Values.push(parseTimeToSeconds(item.avg90_str));
-        tempoMedioValues.push(parseTimeToSeconds(item.tempoMedio_str));
-    }
-    
-    // Função para converter tempo HH:MM:SS para segundos
-    function parseTimeToSeconds(timeStr) {
-        if (!timeStr || timeStr === '') return 0;
-        
-        const parts = timeStr.split(':');
-        
-        if (parts.length === 3) {
-            // Formato HH:MM:SS
-            const hours = parseInt(parts[0]) || 0;
-            const minutes = parseInt(parts[1]) || 0;
-            const seconds = parseInt(parts[2]) || 0;
-            return (hours * 3600) + (minutes * 60) + seconds;
-        } else if (parts.length === 2) {
-            // Formato MM:SS
-            const minutes = parseInt(parts[0]) || 0;
-            const seconds = parseInt(parts[1]) || 0;
-            return (minutes * 60) + seconds;
-        } else if (timeStr.endsWith('s')) {
-            // Formato Xs (apenas segundos)
-            return parseInt(timeStr.replace('s', '')) || 0;
-        } else {
-            // Tentar parsear como número
-            return parseInt(timeStr) || 0;
-        }
+        avg70Values.push(item.avg70_sec);
+        avg90Values.push(item.avg90_sec);
+        tempoMedioValues.push(item.tempoMedio_sec);
     }
     
     // Função para formatar segundos para HH:MM:SS

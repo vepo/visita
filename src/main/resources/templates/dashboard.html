@@ -130,9 +130,9 @@
                 {
                     "data": "{visita.data}",
                     "visitas": {visita.visitas},
-                    "avg70_str": "{visita.avg70.formatSecondsToHHMMSS}",
-                    "avg90_str": "{visita.avg90.formatSecondsToHHMMSS}",
-                    "tempoMedio_str": "{visita.tempoMedio.formatSecondsToHHMMSS}"
+                    "avg70_sec": "{visita.avg70.timestamp}",
+                    "avg90_sec": "{visita.avg90.timestamp}",
+                    "tempoMedio_sec": "{visita.tempoMedio.timestamp}"
                 }{#if visita_hasNext},{/if}
                 {/for}
             ]
