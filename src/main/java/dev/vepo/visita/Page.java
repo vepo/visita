@@ -1,5 +1,7 @@
 package dev.vepo.visita;
 
+import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -52,5 +54,26 @@ public class Page {
 
     public void setDomain(Domain domain) {
         this.domain = domain;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        } else {
+            return Objects.equals(((Page) obj).id, id);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Page[id=%d, path=%s, domain=%s]".formatted(id, path, domain);
     }
 }

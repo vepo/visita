@@ -1,5 +1,7 @@
 package dev.vepo.visita;
 
+import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,5 +39,26 @@ public class Domain {
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+        @Override
+    public int hashCode() {
+        return Objects.hash(this.id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        } else {
+            return Objects.equals(((Domain) obj).id, id);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Domain[id=%d, hostname=%s]".formatted(id, hostname);
     }
 }

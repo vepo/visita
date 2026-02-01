@@ -15,5 +15,7 @@ public class GivenRepository {
 
     public void cleanup() {
         this.entityManager.createQuery("DELETE FROM View").executeUpdate();
+        this.entityManager.createQuery("DELETE FROM Page").executeUpdate();
+        this.entityManager.createQuery("DELETE FROM Domain").executeUpdate();
     }
 }

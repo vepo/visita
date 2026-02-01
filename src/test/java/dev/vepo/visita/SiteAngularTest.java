@@ -12,6 +12,7 @@ import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.infra.Given;
+import dev.vepo.infra.StaticServer;
 import dev.vepo.infra.ViewSession;
 import dev.vepo.infra.WebTest;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -30,40 +31,45 @@ class SiteAngularTest {
     @BeforeEach
     void cleanup() {
         Given.cleanDatabase();
+        Given.domain()
+             .withHostname("localhost")
+             .persist();
     }
 
     @Test
     void angularAppTest(WebDriver driver, ViewSession session) {
-        driver.get(SiteAngularTest.class.getClassLoader().getResource("/angular-app.html").toString());
-        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        try (var siteServer = StaticServer.serverFor("/angular-app.html");
+                var otherSever = StaticServer.serverFor("/other-static-page.html")) {
+            driver.get(siteServer.getServerURL());
+            Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        session.injectScript(visitaScriptUrl);
+            session.injectScript(visitaScriptUrl);
 
-        // wait for tracker to initialize (exposes window.VisitaTracker.getVisitaId)
-        wait.until(d -> session.isScriptLoaded());
+            // wait for tracker to initialize (exposes window.VisitaTracker.getVisitaId)
+            wait.until(d -> session.isScriptLoaded());
 
-        // initial access should have created a visit
-        Assertions.assertThat(visitaRepository.findAll()).hasSize(1);
+            // initial access should have created a visit
+            Assertions.assertThat(visitaRepository.findAll()).hasSize(1);
 
-        // Navigate within SPA to the 'About' route
-        var aboutLink = driver.findElement(By.id("link-about"));
-        aboutLink.click();
+            // Navigate within SPA to the 'About' route
+            var aboutLink = driver.findElement(By.id("link-about"));
+            aboutLink.click();
 
-        // wait until the view updates to About
-        wait.until(d -> d.findElement(By.id("page-title")).getText().equals("About"));
+            // wait until the view updates to About
+            wait.until(d -> d.findElement(By.id("page-title")).getText().equals("About"));
 
-        // Force a new visita (the tracker exposes an async function; trigger it)
-        driver.navigate().to(SiteEstaticoTest.class.getClassLoader().getResource("/other-static-page.html"));
-        wait.until(d -> d.getTitle().equals("Other Test Page"));
-        wait.until(d -> d.findElement(By.id("done")).isEnabled());
+            // Force a new visita (the tracker exposes an async function; trigger it)
+            driver.navigate().to(otherSever.getServerURL());
+            wait.until(d -> d.getTitle().equals("Other Test Page"));
+            wait.until(d -> d.findElement(By.id("done")).isEnabled());
 
-        var visitas = visitaRepository.findAll();
-        Assertions.assertThat(visitas)
-                  .hasSize(2)
-                  .extracting(View::getPage)
-                  .extracting(Page::getPath)
-                  .extracting(path -> path.replaceFirst(".*\\.html", ""))
-                  .containsExactlyInAnyOrder("#!/about",
-                                             "#!/home");
+            var visitas = visitaRepository.findAll();
+            Assertions.assertThat(visitas)
+                      .hasSize(2)
+                      .extracting(View::getPage)
+                      .extracting(Page::getPath)
+                      .containsExactlyInAnyOrder("/about",
+                                                 "/home");
+        }
     }
 }
