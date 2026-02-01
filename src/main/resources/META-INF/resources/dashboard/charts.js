@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     for (let i = 0; i < visitasData.visitasDiarias.length; i++) {
         const item = visitasData.visitasDiarias[i];
-        datas.push(item.data);
+        const [year, month, day] = item.data.split('-');
+        datas.push(`${day}/${month}/${year}`);
         visitas.push(item.visitas);
         
         // Converter tempo de string HH:MM:SS para segundos
