@@ -82,7 +82,7 @@ class SiteLatestAngularTest {
         var visitas = visitaRepository.findAll();
         Assertions.assertThat(visitas)
                   .hasSize(4)
-                  .extracting(Visita::getPagina)
+                  .extracting(View::getPagina)
                   .extracting(path -> path.replaceFirst(".*\\.html", ""))
                   .containsExactlyInAnyOrder("",
                                              "#/products",

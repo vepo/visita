@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "tb_views")
-public class Visita {
+public class View {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,9 +40,9 @@ public class Visita {
 
     private String timezone;
 
-    public Visita() {}
+    public View() {}
 
-    public Visita(String page, String referrer, String userAgent, String timezone, long timestamp) {
+    public View(String page, String referrer, String userAgent, String timezone, long timestamp) {
         this.pagina = page;
         this.referrer = referrer;
         this.timezone = timezone;
@@ -52,7 +52,7 @@ public class Visita {
                                  .toLocalDateTime();
     }
 
-    public Visita(String page, long timestamp, Visita extended) {
+    public View(String page, long timestamp, View extended) {
         this.pagina = page;
         this.referrer = extended.referrer;
         this.userAgent = extended.userAgent;
@@ -151,7 +151,7 @@ public class Visita {
         } else if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         } else {
-            return Objects.equals(((Visita) obj).id, id);
+            return Objects.equals(((View) obj).id, id);
         }
     }
 

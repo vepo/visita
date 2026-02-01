@@ -14,6 +14,6 @@ public class GivenRepository {
     }
 
     public void cleanup() {
-        this.entityManager.createQuery("DELETE FROM Visita").executeUpdate();
+        this.entityManager.createQuery("DELETE FROM View").executeUpdate();
     }
 }

@@ -3,7 +3,7 @@ package dev.vepo.infra;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import dev.vepo.visita.Visita;
+import dev.vepo.visita.View;
 import dev.vepo.visita.VisitaRepository;
 
 public class VisitaBuilder {
@@ -28,7 +28,7 @@ public class VisitaBuilder {
 
     public void persist() {
         var repo = Given.inject(VisitaRepository.class);
-        var visita = new Visita(pagina, "test", "test", "test", System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(duracao));
+        var visita = new View(pagina, "test", "test", "test", System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(duracao));
         visita.setDataSaida(LocalDateTime.now());
         Given.withTransaction(() -> repo.save(visita));
     }

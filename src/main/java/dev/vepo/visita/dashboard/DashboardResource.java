@@ -2,8 +2,8 @@ package dev.vepo.visita.dashboard;
 
 import java.time.LocalDateTime;
 
-import dev.vepo.visita.EstatisticaPorDia;
-import dev.vepo.visita.VisitaService;
+import dev.vepo.visita.DailyStats;
+import dev.vepo.visita.ViewsService;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
@@ -17,10 +17,10 @@ public class DashboardResource {
 
     private final Template dashboard;
 
-    private final VisitaService visitaService;
+    private final ViewsService visitaService;
 
     @Inject
-    public DashboardResource(VisitaService visitaService, Template dashboard) {
+    public DashboardResource(ViewsService visitaService, Template dashboard) {
         this.visitaService = visitaService;
         this.dashboard = dashboard;
     }
@@ -28,18 +28,13 @@ public class DashboardResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance getDashboard() {
-        var visitasDiarias = visitaService.getVisitasDiarias();
-        var visitasPorPagina = visitaService.getVisitasPorPagina();
-        var visitasPorPaginaUltimaSemana = visitaService.getVisitasPorPagina(LocalDateTime.now()
-                                                                                          .minusDays(7));
-
-        long totalVisitas = visitasDiarias.stream()
-                                          .mapToLong(EstatisticaPorDia::visitas)
-                                          .sum();
-
-        return dashboard.data("visitasDiarias", visitasDiarias)
-                        .data("visitasPorPagina", visitasPorPagina)
-                        .data("visitasPorPaginaUltimaSemana", visitasPorPaginaUltimaSemana)
-                        .data("totalVisitas", totalVisitas);
+        var dailyViews = visitaService.getDailyViews();
+        return dashboard.data("dailyViews", dailyViews)
+                        .data("pageViews", visitaService.getPageViews())
+                        .data("pageViewsLastWeek", visitaService.getPageViews(LocalDateTime.now()
+                                                                                           .minusDays(7)))
+                        .data("totalViews", dailyViews.stream()
+                                                      .mapToLong(DailyStats::views)
+                                                      .sum());
     }
 }

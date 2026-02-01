@@ -60,7 +60,7 @@ class SiteAngularTest {
         var visitas = visitaRepository.findAll();
         Assertions.assertThat(visitas)
                   .hasSize(2)
-                  .extracting(Visita::getPagina)
+                  .extracting(View::getPagina)
                   .extracting(path -> path.replaceFirst(".*\\.html", ""))
                   .containsExactlyInAnyOrder("#!/about",
                                              "#!/home");

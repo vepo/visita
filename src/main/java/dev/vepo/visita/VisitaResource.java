@@ -7,9 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
@@ -24,38 +21,12 @@ import jakarta.ws.rs.core.Response;
 public class VisitaResource {
     private static final Logger logger = LoggerFactory.getLogger(VisitaResource.class);
 
-    private final VisitaService visitaService;
+    private final ViewsService visitaService;
 
     @Inject
-    public VisitaResource(VisitaService visitaService) {
+    public VisitaResource(ViewsService visitaService) {
         this.visitaService = visitaService;
     }
-
-    public static record IniciarVisitaRequest(String language,
-                                              @NotBlank String page,
-                                              String referrer,
-                                              String screenResolution,
-                                              @NotBlank String tabId,
-                                              @NotNull @Min(1) long timestamp,
-                                              String timezone,
-                                              String userAgent,
-                                              @NotBlank String userId) {}
-
-    public static record FinalizarVisitaRequest(@NotNull long id,
-                                                @NotNull @Min(1) long timestamp) {}
-
-    public static record PingVisitaRequest(@NotNull long id,
-                                           @NotNull @Min(1) long timestamp) {}
-
-    public static record IniciarVisitaResponse(long id) {}
-
-    public static record ViewVisitaResponse(@NotNull long id,
-                                            @NotBlank String page,
-                                            @NotBlank String tabId,
-                                            @NotNull @Min(1) long timestamp,
-                                            @NotBlank String userId) {}
-
-    public static record ViewResponse(long id) {}
 
     @POST
     @Path("/access")

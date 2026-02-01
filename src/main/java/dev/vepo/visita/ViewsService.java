@@ -14,24 +14,24 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class VisitaService {
-    private static final Logger logger = LoggerFactory.getLogger(VisitaService.class);
+public class ViewsService {
+    private static final Logger logger = LoggerFactory.getLogger(ViewsService.class);
 
     private final VisitaRepository visitaRepository;
 
     @Inject
-    public VisitaService(VisitaRepository visitaRepository) {
+    public ViewsService(VisitaRepository visitaRepository) {
         this.visitaRepository = visitaRepository;
     }
 
     @Transactional
-    public Visita registrarAcesso(String page, String referer, String userAgent, String ip, long timestamp) {
-        return visitaRepository.save(new Visita(page, referer, userAgent, ip, timestamp));
+    public View registrarAcesso(String page, String referer, String userAgent, String ip, long timestamp) {
+        return visitaRepository.save(new View(page, referer, userAgent, ip, timestamp));
     }
 
     @Transactional
     public void registrarSaida(Long id, long timestamp) {
-        Visita visita = visitaRepository.findById(id);
+        View visita = visitaRepository.findById(id);
         if (Objects.nonNull(visita)) {
             visita.setDataSaida(Instant.ofEpochMilli(timestamp)
                                         .atZone(ZoneId.systemDefault())
@@ -42,7 +42,7 @@ public class VisitaService {
     }
 
     @Transactional
-    public Visita registerView(long id, String page, long timestamp) {
+    public View registerView(long id, String page, long timestamp) {
         var visita = visitaRepository.findById(id);
         logger.info("View found! view={}", visita);
         if (Objects.nonNull(visita)) {
@@ -58,7 +58,7 @@ public class VisitaService {
                 visitaRepository.save(visita);
                 
                 // start a new view
-                return visitaRepository.save(new Visita(page, timestamp, visita));
+                return visitaRepository.save(new View(page, timestamp, visita));
             }
         } else {
             logger.warn("Visita not found! id={}", id);
@@ -68,7 +68,7 @@ public class VisitaService {
 
     @Transactional
     public void registraPing(Long visitaId, long timestamp) {
-        Visita visita = visitaRepository.findById(visitaId);
+        View visita = visitaRepository.findById(visitaId);
         if (Objects.nonNull(visita)) {
             visita.extendDuration(timestamp);
             visitaRepository.save(visita);
@@ -77,15 +77,15 @@ public class VisitaService {
         }
     }
 
-    public List<EstatisticaPorDia> getVisitasDiarias() {
+    public List<DailyStats> getDailyViews() {
         return visitaRepository.findDailyViews();
     }
 
-    public List<EstatisticaPorPagina> getVisitasPorPagina() {
-        return getVisitasPorPagina(LocalDateTime.MIN);
+    public List<PageStats> getPageViews() {
+        return getPageViews(LocalDateTime.MIN);
     }
 
-    public List<EstatisticaPorPagina> getVisitasPorPagina(LocalDateTime startDate) {
+    public List<PageStats> getPageViews(LocalDateTime startDate) {
         return visitaRepository.findPageViews(startDate);
     }
 }

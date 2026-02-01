@@ -16,66 +16,66 @@ public class VisitaRepository {
         this.entityManager = entityManager;
     }
 
-    public Visita save(Visita visita) {
+    public View save(View visita) {
         this.entityManager.persist(visita);
         return visita;
     }
 
-    public Visita findById(Long id) {
-        return this.entityManager.find(Visita.class, id);
+    public View findById(Long id) {
+        return this.entityManager.find(View.class, id);
     }
 
-    public List<EstatisticaPorDia> findDailyViews() {
+    public List<DailyStats> findDailyViews() {
         return entityManager.createQuery("""
-                                         SELECT new EstatisticaPorDia(DATE(v.dataAcesso),
-                                                                      COUNT(v.id),
-                                                                      AVG(v.duracao),
-                                                                      PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao),
-                                                                      PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao))
-                                         FROM Visita v
+                                         SELECT new DailyStats(DATE(v.dataAcesso),
+                                                               COUNT(v.id),
+                                                               AVG(v.duracao),
+                                                               PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao),
+                                                               PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao))
+                                         FROM View v
                                          WHERE v.dataAcesso IS NOT NULL AND v.duracao IS NOT NULL
                                          GROUP BY DATE(v.dataAcesso)
                                          ORDER BY DATE(v.dataAcesso) DESC
-                                         """, EstatisticaPorDia.class)
+                                         """, DailyStats.class)
                             .getResultStream()
                             .toList();
     }
 
-    public List<EstatisticaPorPagina> findPageViews(LocalDateTime startDate) {
+    public List<PageStats> findPageViews(LocalDateTime startDate) {
         if (startDate == LocalDateTime.MIN) {
             return entityManager.createQuery("""
-                                             SELECT new EstatisticaPorPagina(v.pagina,
-                                                                             COUNT(v.id) as visitas,
-                                                                             AVG(v.duracao) as tempoMedio,
-                                                                             PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
-                                                                             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
-                                             FROM Visita v
+                                             SELECT new PageStats(v.pagina,
+                                                                  COUNT(v.id) as views,
+                                                                  AVG(v.duracao) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc90)
+                                             FROM View v
                                              WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
                                              GROUP BY v.pagina
-                                             ORDER BY visitas DESC
-                                             """, EstatisticaPorPagina.class)
+                                             ORDER BY views DESC
+                                             """, PageStats.class)
                                 .getResultStream()
                                 .toList();
         } else {
             return entityManager.createQuery("""
-                                             SELECT new EstatisticaPorPagina(v.pagina,
-                                                                             COUNT(v.id) as visitas,
-                                                                             AVG(v.duracao) as tempoMedio,
-                                                                             PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc50,
-                                                                             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as tempoMedioPerc90)
-                                             FROM Visita v
+                                             SELECT new PageStats(v.pagina,
+                                                                  COUNT(v.id) as views,
+                                                                  AVG(v.duracao) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc90)
+                                             FROM View v
                                              WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL AND v.dataAcesso >= :start_date
                                              GROUP BY v.pagina
-                                             ORDER BY visitas DESC
-                                             """, EstatisticaPorPagina.class)
+                                             ORDER BY views DESC
+                                             """, PageStats.class)
                                 .setParameter("start_date", startDate)
                                 .getResultStream()
                                 .toList();
         }
     }
 
-    public List<Visita> findAll() {
-        return entityManager.createQuery("FROM Visita", Visita.class)
+    public List<View> findAll() {
+        return entityManager.createQuery("FROM View", View.class)
                             .getResultList();
     }
 }

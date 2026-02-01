@@ -52,8 +52,8 @@ class DashboardTest {
                   .isEqualTo("Dashboard de visitas do blog");
 
         // Check total visits card
-        WebElement totalVisitasCard = driver.findElements(By.className("card")).get(0);
-        Assertions.assertThat(totalVisitasCard.findElement(By.tagName("h2")).getText())
+        WebElement totalViewsCard = driver.findElements(By.className("card")).get(0);
+        Assertions.assertThat(totalViewsCard.findElement(By.tagName("h2")).getText())
                   .isEqualTo("Total de Visitas");
         Assertions.assertThat(driver.findElement(By.id("total-visitas")).getText())
                   .as("Total visits should be 3")
@@ -89,9 +89,9 @@ class DashboardTest {
                   .containsExactlyInAnyOrder("Número de Visitas", "Métricas de Tempo");
 
         // Verify charts canvas elements exist
-        Assertions.assertThat(dailyVisitsCard.findElement(By.id("visitasDiariasChart")))
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
                   .isNotNull();
-        Assertions.assertThat(dailyVisitsCard.findElement(By.id("tempoMedioChart")))
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avgDurationChart")))
                   .isNotNull();
 
         // Verify visits by page table structure
