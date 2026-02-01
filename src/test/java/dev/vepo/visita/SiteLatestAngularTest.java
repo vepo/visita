@@ -26,7 +26,7 @@ class SiteLatestAngularTest {
     URL visitaScriptUrl;
 
     @Inject
-    private VisitaRepository visitaRepository;
+    private ViewRepository visitaRepository;
 
     @BeforeEach
     void cleanup() {
@@ -82,7 +82,8 @@ class SiteLatestAngularTest {
         var visitas = visitaRepository.findAll();
         Assertions.assertThat(visitas)
                   .hasSize(4)
-                  .extracting(View::getPagina)
+                  .extracting(View::getPage)
+                  .extracting(Page::getPath)
                   .extracting(path -> path.replaceFirst(".*\\.html", ""))
                   .containsExactlyInAnyOrder("",
                                              "#/products",

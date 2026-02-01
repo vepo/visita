@@ -11,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,8 +23,9 @@ public class View {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "page")
-    private String pagina;
+    @ManyToOne
+    @JoinColumn(name = "page_id")
+    private Page page;
 
     private String referrer;
 
@@ -30,36 +33,36 @@ public class View {
     private String userAgent;
 
     @Column(name = "access_timestamp")
-    private LocalDateTime dataAcesso;
+    private LocalDateTime accessTimestamp;
 
     @Column(name = "end_timestamp")
-    private LocalDateTime dataSaida;
+    private LocalDateTime endTimestamp;
 
     @Column(name = "length")
-    private Long duracao; // em segundos
+    private Long length; // em segundos
 
     private String timezone;
 
     public View() {}
 
-    public View(String page, String referrer, String userAgent, String timezone, long timestamp) {
-        this.pagina = page;
+    public View(Page page, String referrer, String userAgent, String timezone, long timestamp) {
+        this.page = page;
         this.referrer = referrer;
         this.timezone = timezone;
         this.userAgent = userAgent;
-        this.dataAcesso = Instant.ofEpochMilli(timestamp)
-                                 .atZone(ZoneId.systemDefault())
-                                 .toLocalDateTime();
+        this.accessTimestamp = Instant.ofEpochMilli(timestamp)
+                                      .atZone(ZoneId.systemDefault())
+                                      .toLocalDateTime();
     }
 
-    public View(String page, long timestamp, View extended) {
-        this.pagina = page;
+    public View(Page page, long timestamp, View extended) {
+        this.page = page;
         this.referrer = extended.referrer;
         this.userAgent = extended.userAgent;
         this.timezone = extended.timezone;
-        this.dataAcesso = Instant.ofEpochMilli(timestamp)
-                                 .atZone(ZoneId.systemDefault())
-                                 .toLocalDateTime();
+        this.accessTimestamp = Instant.ofEpochMilli(timestamp)
+                                      .atZone(ZoneId.systemDefault())
+                                      .toLocalDateTime();
     }
 
     public Long getId() {
@@ -70,16 +73,16 @@ public class View {
         this.id = id;
     }
 
-    public String getPagina() {
-        return pagina;
+    public Page getPage() {
+        return page;
     }
 
-    public void setPagina(String pagina) {
-        this.pagina = pagina;
+    public void setPage(Page page) {
+        this.page = page;
     }
 
-    public boolean isSamePage(String page) {
-        return Objects.equals(pagina, page);
+    public boolean isSamePage(String path) {
+        return Objects.nonNull(page) && Objects.equals(path, page.getPath());
     }
 
     public String getReferrer() {
@@ -106,37 +109,37 @@ public class View {
         this.timezone = timezone;
     }
 
-    public LocalDateTime getDataAcesso() {
-        return dataAcesso;
+    public LocalDateTime getAccessTimestamp() {
+        return accessTimestamp;
     }
 
-    public void setDataAcesso(LocalDateTime dataAcesso) {
-        this.dataAcesso = dataAcesso;
+    public void setAccessTimestamp(LocalDateTime accessTimestamp) {
+        this.accessTimestamp = accessTimestamp;
     }
 
-    public LocalDateTime getDataSaida() {
-        return dataSaida;
+    public LocalDateTime getEndTimestamp() {
+        return endTimestamp;
     }
 
-    public void setDataSaida(LocalDateTime dataSaida) {
-        this.dataSaida = dataSaida;
-        if (this.dataAcesso != null && this.dataSaida != null) {
-            this.duracao = ChronoUnit.SECONDS.between(this.dataAcesso, this.dataSaida);
+    public void setEndTimestamp(LocalDateTime dataSaida) {
+        this.endTimestamp = dataSaida;
+        if (this.accessTimestamp != null && this.endTimestamp != null) {
+            this.length = ChronoUnit.SECONDS.between(this.accessTimestamp, this.endTimestamp);
         }
     }
 
-    public Long getDuracao() {
-        return duracao;
+    public Long getLength() {
+        return length;
     }
 
-    public void setDuracao(Long duracao) {
-        this.duracao = duracao;
+    public void setLength(Long length) {
+        this.length = length;
     }
 
     public void extendDuration(long timestamp) {
-        this.duracao = ChronoUnit.SECONDS.between(this.dataAcesso, Instant.ofEpochMilli(timestamp)
-                                                                          .atZone(ZoneId.systemDefault())
-                                                                          .toLocalDateTime());
+        this.length = ChronoUnit.SECONDS.between(this.accessTimestamp, Instant.ofEpochMilli(timestamp)
+                                                                              .atZone(ZoneId.systemDefault())
+                                                                              .toLocalDateTime());
     }
 
     @Override
@@ -157,10 +160,11 @@ public class View {
 
     @Override
     public String toString() {
-        return "Visita [id=%s, pagina=%s, referrer=%s, userAgent=%s, timezone=%s, dataAcesso=%s, dataSaida=%s, duracao=%s]".formatted(id, pagina, referrer,
-                                                                                                                                     userAgent,
-                                                                                                                                     timezone, dataAcesso,
-                                                                                                                                     dataSaida,
-                                                                                                                                     duracao);
+        return "Visita [id=%s, page=%s, referrer=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id, page, referrer,
+                                                                                                                                           userAgent,
+                                                                                                                                           timezone,
+                                                                                                                                           accessTimestamp,
+                                                                                                                                           endTimestamp,
+                                                                                                                                           length);
     }
 }

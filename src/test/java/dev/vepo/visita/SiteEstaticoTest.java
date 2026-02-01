@@ -28,7 +28,7 @@ class SiteEstaticoTest {
     URL dashboardUrl;
 
     @Inject
-    private VisitaRepository visitaRepository;
+    private ViewRepository visitaRepository;
 
     @BeforeEach
     void cleanup() {
@@ -57,7 +57,7 @@ class SiteEstaticoTest {
         wait.until(d -> d.findElement(By.id("done")).isEnabled());
         Assertions.assertThat(visitaRepository.findAll()).hasSize(1);
         var visita = visitaRepository.findAll().get(0);
-        Assertions.assertThat(visita.getDuracao()).isGreaterThan(3);
+        Assertions.assertThat(visita.getLength()).isGreaterThan(3);
 
         driver.navigate().to(dashboardUrl);
         wait.until(d -> d.findElement(By.id("visitas-por-pagina")).isDisplayed());

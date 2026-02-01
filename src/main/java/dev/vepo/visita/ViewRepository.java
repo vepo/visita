@@ -8,11 +8,11 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
 @ApplicationScoped
-public class VisitaRepository {
+public class ViewRepository {
     private final EntityManager entityManager;
 
     @Inject
-    public VisitaRepository(EntityManager entityManager) {
+    public ViewRepository(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -27,15 +27,15 @@ public class VisitaRepository {
 
     public List<DailyStats> findDailyViews() {
         return entityManager.createQuery("""
-                                         SELECT new DailyStats(DATE(v.dataAcesso),
+                                         SELECT new DailyStats(DATE(v.accessTimestamp),
                                                                COUNT(v.id),
-                                                               AVG(v.duracao),
-                                                               PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao),
-                                                               PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao))
+                                                               AVG(v.length),
+                                                               PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                               PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
                                          FROM View v
-                                         WHERE v.dataAcesso IS NOT NULL AND v.duracao IS NOT NULL
-                                         GROUP BY DATE(v.dataAcesso)
-                                         ORDER BY DATE(v.dataAcesso) DESC
+                                         WHERE v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                         GROUP BY DATE(v.accessTimestamp)
+                                         ORDER BY DATE(v.accessTimestamp) DESC
                                          """, DailyStats.class)
                             .getResultStream()
                             .toList();
@@ -44,28 +44,28 @@ public class VisitaRepository {
     public List<PageStats> findPageViews(LocalDateTime startDate) {
         if (startDate == LocalDateTime.MIN) {
             return entityManager.createQuery("""
-                                             SELECT new PageStats(v.pagina,
+                                             SELECT new PageStats(v.page,
                                                                   COUNT(v.id) as views,
-                                                                  AVG(v.duracao) as avgDuration,
-                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc50,
-                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc90)
+                                                                  AVG(v.length) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                              FROM View v
-                                             WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL
-                                             GROUP BY v.pagina
+                                             WHERE v.page IS NOT NULL AND v.length IS NOT NULL
+                                             GROUP BY v.page
                                              ORDER BY views DESC
                                              """, PageStats.class)
                                 .getResultStream()
                                 .toList();
         } else {
             return entityManager.createQuery("""
-                                             SELECT new PageStats(v.pagina,
+                                             SELECT new PageStats(v.page,
                                                                   COUNT(v.id) as views,
-                                                                  AVG(v.duracao) as avgDuration,
-                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc50,
-                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.duracao) as avgDurationPerc90)
+                                                                  AVG(v.length) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                              FROM View v
-                                             WHERE v.pagina IS NOT NULL AND v.duracao IS NOT NULL AND v.dataAcesso >= :start_date
-                                             GROUP BY v.pagina
+                                             WHERE v.page IS NOT NULL AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                             GROUP BY v.page
                                              ORDER BY views DESC
                                              """, PageStats.class)
                                 .setParameter("start_date", startDate)

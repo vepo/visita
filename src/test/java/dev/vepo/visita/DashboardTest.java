@@ -33,9 +33,9 @@ class DashboardTest {
     @Test
     void dashboardShouldDisplayCorrectData(WebDriver driver, ViewSession session) {
         // Create some test data first
-        Given.visita().withPagina("/index.html").withDuracao(30).persist();
-        Given.visita().withPagina("/about.html").withDuracao(45).persist();
-        Given.visita().withPagina("/index.html").withDuracao(25).persist();
+        Given.visita().withPage("https://localhost:8080/index.html").withLength(30).persist();
+        Given.visita().withPage("https://localhost:8080/about.html").withLength(45).persist();
+        Given.visita().withPage("https://localhost:8080/index.html").withLength(25).persist();
 
         // Navigate to the dashboard page
         driver.navigate().to(visitaScriptUrl);
@@ -174,7 +174,7 @@ class DashboardTest {
         // Create a new visit (simulating backend data change)
         // In a real scenario, you might need to refresh the page or it might
         // auto-update
-        Given.visita().withPagina("/new-page.html").withDuracao(60).persist();
+        Given.visita().withPage("https://localhost:8080/new-page.html").withLength(60).persist();
 
         // Refresh dashboard to see updated data
         driver.navigate().refresh();

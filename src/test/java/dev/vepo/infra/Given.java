@@ -29,7 +29,7 @@ public abstract class Given {
         }
     }
 
-    public static VisitaBuilder visita() {
-        return new VisitaBuilder();
+    public static ViewBuilder visita() {
+        return new ViewBuilder();
     }
 }
