@@ -21,7 +21,7 @@ import jakarta.inject.Inject;
 
 @QuarkusTest
 @WebTest
-class SiteAngularTest {
+class AngularTest {
     @TestHTTPResource("/visita.js")
     URL visitaScriptUrl;
 

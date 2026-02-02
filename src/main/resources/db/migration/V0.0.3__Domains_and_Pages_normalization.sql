@@ -27,61 +27,51 @@ ALTER TABLE tb_views
 -- Step 3: Extract and insert unique domains from existing URLs
 INSERT INTO tb_domains (hostname)
 SELECT DISTINCT 
-    CASE 
-        WHEN "page" IS NOT NULL AND "page" != '' THEN
-            LOWER(
-                REGEXP_REPLACE(
-                    REGEXP_REPLACE(
-                        "page",
-                        '^https?://',
-                        ''
-                    ),
-                    '^([^/]+).*$',
-                    '\1'
-                )
-            )
-        ELSE NULL
-    END AS hostname
+    LOWER(
+        REGEXP_REPLACE(
+            REGEXP_REPLACE(
+                -- Remove fragment before extracting domain
+                REGEXP_REPLACE("page", '#.*$', ''),
+                '^https?://',
+                ''
+            ),
+            '^([^/]+).*$',
+            '\1'
+        )
+    ) AS hostname
 FROM tb_views 
 WHERE "page" IS NOT NULL 
     AND "page" != ''
-    AND CASE 
-        WHEN "page" IS NOT NULL AND "page" != '' THEN
-            LOWER(
-                REGEXP_REPLACE(
-                    REGEXP_REPLACE(
-                        "page",
-                        '^https?://',
-                        ''
-                    ),
-                    '^([^/]+).*$',
-                    '\1'
-                )
-            )
-        ELSE NULL
-    END IS NOT NULL
 ON CONFLICT (hostname) DO NOTHING;
 
 -- Step 4: Extract and insert unique pages with their domain references
 INSERT INTO tb_pages (path, domain_id)
 SELECT DISTINCT 
     LOWER(
-        '/' || REGEXP_REPLACE(
-            REGEXP_REPLACE(
-                "page",
-                '^https?://[^/]+',
-                ''
+        COALESCE(
+            NULLIF(
+                '/' || REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        -- Remove fragment before extracting path
+                        REGEXP_REPLACE(v."page", '#.*$', ''),
+                        '^https?://[^/]+',
+                        ''
+                    ),
+                    '^/?',
+                    ''
+                ),
+                '/'
             ),
-            '^/?',
-            ''
+            '/'
         )
     ) AS path,
     d.id AS domain_id
 FROM tb_views v
-LEFT JOIN tb_domains d ON LOWER(
+INNER JOIN tb_domains d ON LOWER(
     REGEXP_REPLACE(
         REGEXP_REPLACE(
-            v."page",
+            -- Remove fragment before extracting domain
+            REGEXP_REPLACE(v."page", '#.*$', ''),
             '^https?://',
             ''
         ),
@@ -89,9 +79,6 @@ LEFT JOIN tb_domains d ON LOWER(
         '\1'
     )
 ) = d.hostname
-WHERE v."page" IS NOT NULL 
-    AND v."page" != ''
-    AND d.id IS NOT NULL
 ON CONFLICT (domain_id, path) DO NOTHING;
 
 -- Step 5: Update tb_views to set the page_id foreign key
@@ -102,7 +89,8 @@ INNER JOIN tb_domains d ON p.domain_id = d.id
 WHERE LOWER(
     REGEXP_REPLACE(
         REGEXP_REPLACE(
-            v."page",
+            -- Remove fragment before extracting domain
+            REGEXP_REPLACE(v."page", '#.*$', ''),
             '^https?://',
             ''
         ),
@@ -111,14 +99,21 @@ WHERE LOWER(
     )
 ) = d.hostname
     AND LOWER(
-        '/' || REGEXP_REPLACE(
-            REGEXP_REPLACE(
-                v."page",
-                '^https?://[^/]+',
-                ''
+        COALESCE(
+            NULLIF(
+                '/' || REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        -- Remove fragment before extracting path
+                        REGEXP_REPLACE(v."page", '#.*$', ''),
+                        '^https?://[^/]+',
+                        ''
+                    ),
+                    '^/?',
+                    ''
+                ),
+                '/'
             ),
-            '^/?',
-            ''
+            '/'
         )
     ) = p.path
     AND v.page_id IS NULL;
