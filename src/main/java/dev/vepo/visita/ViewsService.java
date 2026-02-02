@@ -2,16 +2,12 @@ package dev.vepo.visita;
 
 import java.net.URI;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.vepo.visita.dashboard.DailyStats;
-import dev.vepo.visita.dashboard.PageStats;
 import dev.vepo.visita.domain.DomainRepository;
 import dev.vepo.visita.page.Page;
 import dev.vepo.visita.page.PageRepository;
@@ -104,17 +100,5 @@ public class ViewsService {
         } else {
             logger.warn("Visita not found! id={}", visitaId);
         }
-    }
-
-    public List<DailyStats> getDailyViews() {
-        return visitaRepository.findDailyViews();
-    }
-
-    public List<PageStats> getPageViews() {
-        return getPageViews(LocalDateTime.MIN);
-    }
-
-    public List<PageStats> getPageViews(LocalDateTime startDate) {
-        return visitaRepository.findPageViews(startDate);
     }
 }
