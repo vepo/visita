@@ -1,4 +1,4 @@
-package dev.vepo.visita;
+package dev.vepo.visita.page;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -3,6 +3,8 @@ package dev.vepo.visita;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import dev.vepo.visita.dashboard.DailyStats;
+import dev.vepo.visita.dashboard.PageStats;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;

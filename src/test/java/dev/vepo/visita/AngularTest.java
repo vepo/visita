@@ -15,6 +15,7 @@ import dev.vepo.infra.Given;
 import dev.vepo.infra.StaticServer;
 import dev.vepo.infra.ViewSession;
 import dev.vepo.infra.WebTest;
+import dev.vepo.visita.page.Page;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

@@ -1,7 +1,8 @@
-package dev.vepo.visita;
+package dev.vepo.visita.page;
 
 import java.util.Objects;
 
+import dev.vepo.visita.domain.Domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

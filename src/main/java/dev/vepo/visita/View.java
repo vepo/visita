@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
+import dev.vepo.visita.page.Page;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

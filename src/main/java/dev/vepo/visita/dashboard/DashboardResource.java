@@ -2,7 +2,6 @@ package dev.vepo.visita.dashboard;
 
 import java.time.LocalDateTime;
 
-import dev.vepo.visita.DailyStats;
 import dev.vepo.visita.ViewsService;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;

@@ -1,7 +1,7 @@
 package dev.vepo.infra;
 
-import dev.vepo.visita.Domain;
-import dev.vepo.visita.DomainRepository;
+import dev.vepo.visita.domain.Domain;
+import dev.vepo.visita.domain.DomainRepository;
 
 public class DomainBuilder {
 

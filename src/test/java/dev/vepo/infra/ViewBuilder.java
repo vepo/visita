@@ -4,12 +4,12 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import dev.vepo.visita.Domain;
-import dev.vepo.visita.DomainRepository;
-import dev.vepo.visita.Page;
-import dev.vepo.visita.PageRepository;
 import dev.vepo.visita.View;
 import dev.vepo.visita.ViewRepository;
+import dev.vepo.visita.domain.Domain;
+import dev.vepo.visita.domain.DomainRepository;
+import dev.vepo.visita.page.Page;
+import dev.vepo.visita.page.PageRepository;
 
 public class ViewBuilder {
 

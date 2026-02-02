@@ -306,7 +306,7 @@ class VisitaAnalytics {
      */
     getApiUrl(endpoint) {
         const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-        return `${protocol}//${DEPLOY_DOMAIN}/api/visita${endpoint}`;
+        return `${protocol}//${DEPLOY_DOMAIN}/api/tracking${endpoint}`;
     }
 
     /**

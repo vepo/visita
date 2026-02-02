@@ -1,5 +1,6 @@
-package dev.vepo.visita;
+package dev.vepo.visita.dashboard;
 
+import dev.vepo.visita.page.Page;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection

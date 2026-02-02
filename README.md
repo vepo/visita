@@ -99,10 +99,10 @@ console.log(window.VisitaAnalytics);      // Inspecione estado interno
 O sistema espera os seguintes endpoints:
 
 ```javascript
-POST /api/visita/access     // Início de sessão
-POST /api/visita/exit       // Fim de sessão (com sendBeacon)
-POST /api/visita/view       // Mudança de página (SPAs)
-POST /api/visita/ping       // Keep-alive da sessão
+POST /api/tracking/access     // Início de sessão
+POST /api/tracking/exit       // Fim de sessão (com sendBeacon)
+POST /api/tracking/view       // Mudança de página (SPAs)
+POST /api/tracking/ping       // Keep-alive da sessão
 ```
 
 ### Configurações Internas (Customizáveis)

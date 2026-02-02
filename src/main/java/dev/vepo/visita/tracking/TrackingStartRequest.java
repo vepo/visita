@@ -1,10 +1,10 @@
-package dev.vepo.visita;
+package dev.vepo.visita.tracking;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record StartViewRequest(String language,
+public record TrackingStartRequest(String language,
                                    @NotBlank String page,
                                    String referrer,
                                    String screenResolution,

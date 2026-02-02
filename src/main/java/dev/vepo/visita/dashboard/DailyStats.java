@@ -1,4 +1,4 @@
-package dev.vepo.visita;
+package dev.vepo.visita.dashboard;
 
 import java.time.LocalDate;
 

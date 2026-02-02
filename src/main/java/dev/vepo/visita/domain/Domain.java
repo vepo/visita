@@ -1,4 +1,4 @@
-package dev.vepo.visita;
+package dev.vepo.visita.domain;
 
 import java.util.Objects;
 

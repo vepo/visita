@@ -10,6 +10,11 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.visita.dashboard.DailyStats;
+import dev.vepo.visita.dashboard.PageStats;
+import dev.vepo.visita.domain.DomainRepository;
+import dev.vepo.visita.page.Page;
+import dev.vepo.visita.page.PageRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

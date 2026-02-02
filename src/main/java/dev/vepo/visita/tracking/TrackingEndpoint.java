@@ -1,10 +1,12 @@
-package dev.vepo.visita;
+package dev.vepo.visita.tracking;
 
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.visita.ViewResponse;
+import dev.vepo.visita.ViewsService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -15,32 +17,32 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/api/visita")
+@Path("/api/tracking")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class ViewResource {
-    private static final Logger logger = LoggerFactory.getLogger(ViewResource.class);
+public class TrackingEndpoint {
+    private static final Logger logger = LoggerFactory.getLogger(TrackingEndpoint.class);
 
     private final ViewsService visitaService;
 
     @Inject
-    public ViewResource(ViewsService visitaService) {
+    public TrackingEndpoint(ViewsService visitaService) {
         this.visitaService = visitaService;
     }
 
     @POST
     @Path("/access")
-    public StartViewResponse access(@Valid StartViewRequest request) {
+    public TrackingStartResponse access(@Valid TrackingStartRequest request) {
         logger.info("Registering access! request={}", request);
         var view = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
                                                  request.timezone(), request.timestamp());
         logger.info("View created! view={}", view);
-        return new StartViewResponse(view.getId());
+        return new TrackingStartResponse(view.getId());
     }
 
     @POST
     @Path("/exit")
-    public Response exit(@Valid CloseViewRequest request) {
+    public Response exit(@Valid TrackingEndRequest request) {
         logger.info("Registering exit! request={}", request);
         visitaService.registrarSaida(request.id(), request.timestamp());
         return Response.ok().build();
@@ -48,7 +50,7 @@ public class ViewResource {
 
     @POST
     @Path("/view")
-    public ViewResponse view(@Valid UpdateViewRequest request) {
+    public ViewResponse view(@Valid TrackingUpdateRequest request) {
         logger.info("Registering view! request={}", request);
         var view = visitaService.registerView(request.id(), request.page(), request.timestamp());
         if (Objects.nonNull(view)) {
@@ -61,7 +63,7 @@ public class ViewResource {
 
     @POST
     @Path("/ping")
-    public Response ping(@Valid PingViewRequest request) {
+    public Response ping(@Valid TrackingPingRequest request) {
         logger.info("Registering ping! request={}", request);
         visitaService.registraPing(request.id(), request.timestamp());
         return Response.ok().build();
