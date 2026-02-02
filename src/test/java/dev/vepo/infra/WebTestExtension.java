@@ -1,6 +1,7 @@
 package dev.vepo.infra;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -10,7 +11,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
+public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
 
     private WebDriver driver;
 
@@ -29,6 +30,11 @@ public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, Pa
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
         driver.close();
+    }
+
+    @Override
+    public void afterTestExecution(ExtensionContext context) throws Exception {
+        driver.get("about:blank");
     }
 
     @Override

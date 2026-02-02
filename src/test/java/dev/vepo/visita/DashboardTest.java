@@ -13,7 +13,6 @@ import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import dev.vepo.infra.Given;
-import dev.vepo.infra.ViewSession;
 import dev.vepo.infra.WebTest;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -31,7 +30,7 @@ class DashboardTest {
     }
 
     @Test
-    void dashboardShouldDisplayCorrectData(WebDriver driver, ViewSession session) {
+    void dashboardShouldDisplayCorrectData(WebDriver driver) {
         // Create some test data first
         Given.visita().withPage("https://localhost:8080/index.html").withLength(30).persist();
         Given.visita().withPage("https://localhost:8080/about.html").withLength(45).persist();
@@ -162,7 +161,7 @@ class DashboardTest {
     }
 
     @Test
-    void dashboardShouldUpdateOnNewVisits(WebDriver driver, ViewSession session) throws InterruptedException {
+    void dashboardShouldUpdateOnNewVisits(WebDriver driver) throws InterruptedException {
         // Navigate to dashboard
         driver.navigate().to(visitaScriptUrl);
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
