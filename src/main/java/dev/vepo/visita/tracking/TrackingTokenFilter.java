@@ -30,9 +30,8 @@ public class TrackingTokenFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        logger.info("Validating tracking code! requestContext={}", requestContext);
+        logger.info("Validating tracking code!");
 
-        
         var token = requestContext.getHeaderString(TOKEN_HEADER);
         if (Objects.isNull(token) || token.isBlank()) {
             requestContext.abortWith(Response.status(Status.BAD_REQUEST).build());

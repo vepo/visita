@@ -10,9 +10,12 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebTestExtension.class);
     private WebDriver driver;
 
     @Override
@@ -29,11 +32,14 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
+        logger.info("Closing Chrome driver...");
         driver.close();
+        logger.info("Chrome driver closed!");
     }
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
+        logger.info("Navigate to an empty page...");
         driver.get("about:blank");
     }
 
