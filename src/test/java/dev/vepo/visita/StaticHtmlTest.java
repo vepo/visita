@@ -36,6 +36,7 @@ class StaticHtmlTest {
         Given.cleanDatabase();
         Given.domain()
              .withHostname("localhost")
+             .withToken("token")
              .persist();
     }
 
@@ -47,7 +48,7 @@ class StaticHtmlTest {
             Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
             var btn = driver.findElement(By.id("button1"));
             wait.until(d -> btn.isDisplayed());
-            session.injectScript(visitaScriptUrl);
+            session.injectScript(visitaScriptUrl, "token");
             wait.until(d -> d.findElement(By.id("done")).isEnabled());
             driver.navigate().to(otherServer.getServerURL());
             wait.until(d -> d.getTitle().equals("Other Test Page"));

@@ -17,12 +17,12 @@ DECLARE
     timezone TEXT;
 BEGIN
     -- Step 1: Insert sample domains
-    INSERT INTO tb_domains (hostname)
+    INSERT INTO tb_domains (hostname, token)
     VALUES 
-        ('example.com'),
-        ('blog.vepo.dev'),
-        ('app.example.com'),
-        ('shop.example.com')
+        ('example.com', 'token-1'),
+        ('blog.vepo.dev', 'token-2'),
+        ('app.example.com', 'token-3'),
+        ('shop.example.com', 'token-4')
     ON CONFLICT (hostname) DO NOTHING;
 
     -- Step 2: Insert sample pages with domain references

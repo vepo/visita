@@ -34,6 +34,7 @@ class AngularTest {
         Given.cleanDatabase();
         Given.domain()
              .withHostname("localhost")
+             .withToken("token")
              .persist();
     }
 
@@ -44,7 +45,7 @@ class AngularTest {
             driver.get(siteServer.getServerURL());
             Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-            session.injectScript(visitaScriptUrl);
+            session.injectScript(visitaScriptUrl, "token");
 
             // wait for tracker to initialize (exposes window.VisitaTracker.getVisitaId)
             wait.until(d -> session.isScriptLoaded());

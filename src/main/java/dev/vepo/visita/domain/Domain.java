@@ -16,13 +16,19 @@ public class Domain {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String hostname;
+
+    @Column(nullable = false)
+    private String token;
 
     public Domain() {}
 
-    public Domain(String hostname) {
+    public Domain(String hostname, String token) {
+        Objects.requireNonNull(hostname, "'hostname' cannot be null!");
+        Objects.requireNonNull(token, "'token' cannot be null!");
         this.hostname = hostname;
+        this.token = token;
     }
 
     public Long getId() {

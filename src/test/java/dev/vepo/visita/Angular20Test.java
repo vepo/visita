@@ -32,18 +32,19 @@ class Angular20Test {
     @BeforeEach
     void cleanup() {
         Given.cleanDatabase();
-        Given.domain()
-             .withHostname("localhost")
-             .persist();
+            Given.domain()
+                 .withHostname("localhost")
+                 .withToken("token")
+                 .persist();
     }
 
     @Test
     void latestAngularAppTest(WebDriver driver, ViewSession session) {
         try (var siteServer = StaticServer.serverFor("/latest-angular-app.html")) {
-            driver.get(siteServer.getServerURL());
             Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            driver.get(siteServer.getServerURL());
 
-            session.injectScript(visitaScriptUrl);
+            session.injectScript(visitaScriptUrl, "token");
 
             // wait for tracker to initialize (exposes window.VisitaTracker.getVisitaId)
             wait.until(d -> session.isScriptLoaded());
@@ -98,7 +99,7 @@ class Angular20Test {
             driver.get(siteServer.getServerURL());
             Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-            session.injectScript(visitaScriptUrl);
+            session.injectScript(visitaScriptUrl, "token");
 
             // wait for tracker to initialize
             wait.until(d -> session.isScriptLoaded());

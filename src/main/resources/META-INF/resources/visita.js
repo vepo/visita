@@ -33,7 +33,55 @@ class VisitaAnalytics {
             tabId: null,
             visitaId: null
         };
-        
+
+        const script = document.currentScript;
+
+        if (script) {
+            const token = script.getAttribute('data-token');
+
+            // Validate required configuration
+            if (!token) {
+                console.error(
+                    'Visita: Missing required configuration.\n' +
+                    'Please provide data-token attribute:\n\n' +
+                    '<script \n' +
+                    '  async \n' +
+                    '  src="https://visita.vepo.dev/visita.js"\n' +
+                    '  data-token="your-auth-token-here">\n' +
+                    '</script>\n\n' +
+                    'Current configuration:\n' +
+                    `- Token: Not provided`
+                );
+
+                this.credentials = {
+                    domain: window.location.hostname,
+                    token: null
+                };
+            } else {
+                this.credentials = {
+                    domain: window.location.hostname,
+                    token: token
+                };
+
+                console.debug('Visita: Configuration loaded successfully');
+            }
+        } else {
+            console.error(
+                'Visita: Script element not found.\n' +
+                'Ensure the script is loaded directly and not through dynamic injection.\n\n' +
+                'Proper installation:\n\n' +
+                '<script \n' +
+                '  async \n' +
+                '  src="https://visita.vepo.dev/visita.js"\n' +
+                '  data-token="your-auth-token-here">\n' +
+                '</script>'
+            );
+
+            this.credentials = {
+                domain: window.location.host,
+                token: null
+            };
+        }
         this.init();
     }
 
@@ -237,6 +285,8 @@ class VisitaAnalytics {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
+                'VISITA-DOMAIN-TOKEN': this.credentials.token
             },
             body: JSON.stringify(data),
             credentials: 'omit',

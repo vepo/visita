@@ -37,7 +37,7 @@ public class ViewBuilder {
         var pageRepository = Given.inject(PageRepository.class);
         var pageUrl = URI.create(page);
         var domain = domainRepository.findByHostname(pageUrl.getHost())
-                                     .orElseGet(() -> domainRepository.save(new Domain(pageUrl.getHost())));
+                                     .orElseGet(() -> domainRepository.save(new Domain(pageUrl.getHost(), "token")));
         var page = pageRepository.findByHostnameAndPath(pageUrl.getHost(), pageUrl.getPath())
                                  .orElseGet(() -> pageRepository.save(new Page(domain, pageUrl.getPath())));
         var visita = new View(page,

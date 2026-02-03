@@ -6,9 +6,11 @@ import dev.vepo.visita.domain.DomainRepository;
 public class DomainBuilder {
 
     private String hostname;
+    private String token;
 
     public DomainBuilder() {
-        hostname = null;
+        this.hostname = null;
+        this.token = null;
     }
 
     public DomainBuilder withHostname(String hostname) {
@@ -16,9 +18,14 @@ public class DomainBuilder {
         return this;
     }
 
+    public DomainBuilder withToken(String token) {
+        this.token = token;
+        return this;
+    }
+
     private void updateDatabase() {
         var repo = Given.inject(DomainRepository.class);
-        repo.save(new Domain(hostname));
+        repo.save(new Domain(hostname, token));
     }
 
     public void persist() {

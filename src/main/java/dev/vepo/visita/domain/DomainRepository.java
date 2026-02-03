@@ -19,6 +19,7 @@ public class DomainRepository {
     public Optional<Domain> findByHostname(String hostname) {
         return entityManager.createQuery("FROM Domain WHERE hostname = :hostname", Domain.class)
                             .setParameter("hostname", hostname)
+                            .setMaxResults(1)
                             .getResultStream()
                             .findFirst();
     }
@@ -27,5 +28,14 @@ public class DomainRepository {
         Objects.requireNonNull(domain, "'domain' cannot be null!");
         this.entityManager.persist(domain);
         return domain;
+    }
+
+    public Optional<Domain> findByHostnameAndToken(String hostname, String token) {
+        return entityManager.createQuery("FROM Domain WHERE hostname = :hostname AND token = :token", Domain.class)
+                            .setParameter("hostname", hostname)
+                            .setParameter("token", token)
+                            .setMaxResults(1)
+                            .getResultStream()
+                            .findFirst();
     }
 }
