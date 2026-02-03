@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Extrair dados do elemento script
     const dataScript = document.getElementById('visitas-data');
     const visitasData = {
-        dailyViews: JSON.parse(dataScript.textContent).dailyViews.sort((o1, o2) => o1.date > o2.date)
+        visitasDiarias: JSON.parse(dataScript.textContent).visitasDiarias.sort((o1, o2) => o1.data.localeCompare(o2.data))
     };
     
     // Processar dados
