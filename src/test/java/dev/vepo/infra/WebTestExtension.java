@@ -1,6 +1,7 @@
 package dev.vepo.infra;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -9,9 +10,12 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver {
+public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCallback, AfterAllCallback, ParameterResolver {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebTestExtension.class);
     private WebDriver driver;
 
     @Override
@@ -28,7 +32,15 @@ public class WebTestExtension implements BeforeAllCallback, AfterAllCallback, Pa
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
+        logger.info("Closing Chrome driver...");
         driver.close();
+        logger.info("Chrome driver closed!");
+    }
+
+    @Override
+    public void afterTestExecution(ExtensionContext context) throws Exception {
+        logger.info("Navigate to an empty page...");
+        driver.get("about:blank");
     }
 
     @Override

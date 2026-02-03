@@ -29,17 +29,17 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-2">Total de Visitas</h2>
-                <p id="total-visitas" class="text-4xl font-bold text-blue-600">{totalVisitas}</p>
+                <p id="total-visitas" class="text-4xl font-bold text-blue-600">{totalViews}</p>
             </div>
             
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-2">Período Analisado</h2>
-                <p class="text-lg text-gray-600">{visitasDiarias.size} dias</p>
+                <p class="text-lg text-gray-600">{dailyViews.size} dias</p>
             </div>
             
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-2">Páginas Monitoradas</h2>
-                <p id="paginas-monitoradas" class="text-lg text-gray-600">{visitasPorPagina.size} páginas</p>
+                <p id="paginas-monitoradas" class="text-lg text-gray-600">{pageViews.size} páginas</p>
             </div>
         </div>
         
@@ -50,13 +50,13 @@
                     <div>
                         <h3 class="text-lg font-medium text-gray-600 mb-2">Número de Visitas</h3>
                         <div class="chart-container">
-                            <canvas id="visitasDiariasChart"></canvas>
+                            <canvas id="daily-views-chart"></canvas>
                         </div>
                     </div>
                     <div>
                         <h3 class="text-lg font-medium text-gray-600 mb-2">Métricas de Tempo</h3>
                         <div class="chart-container">
-                            <canvas id="tempoMedioChart"></canvas>
+                            <canvas id="avgDurationChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -75,13 +75,13 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            {#for visita in visitasPorPaginaUltimaSemana}
+                            {#for view in pageViewsLastWeek}
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{visita.pagina}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{visita.visitas}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg70.formatSecondsToHHMMSS}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg90.formatSecondsToHHMMSS}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.tempoMedio.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{view.page}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{view.views}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p70Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p90Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.avgDuration.formatSecondsToHHMMSS}</td>
                             </tr>
                             {/for}
                         </tbody>
@@ -102,13 +102,13 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            {#for visita in visitasPorPagina}
+                            {#for view in pageViews}
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{visita.pagina}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{visita.visitas}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg70.formatSecondsToHHMMSS}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.avg90.formatSecondsToHHMMSS}</td>
-                                <td class="px-4 py-3 text-right text-sm text-gray-900">{visita.tempoMedio.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{view.page}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{view.views}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p70Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p90Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.avgDuration.formatSecondsToHHMMSS}</td>
                             </tr>
                             {/for}
                         </tbody>
@@ -125,15 +125,15 @@
     <!-- Dados passados do Qute para JavaScript -->
     <script id="visitas-data" type="application/json">
         {
-            "visitasDiarias": [
-                {#for visita in visitasDiarias}
+            "dailyViews": [
+                {#for view in dailyViews}
                 {
-                    "data": "{visita.data}",
-                    "visitas": {visita.visitas},
-                    "avg70_sec": "{visita.avg70.timestamp}",
-                    "avg90_sec": "{visita.avg90.timestamp}",
-                    "tempoMedio_sec": "{visita.tempoMedio.timestamp}"
-                }{#if visita_hasNext},{/if}
+                    "date": "{view.date}",
+                    "views": {view.views},
+                    "p70Duration_sec": "{view.p70Duration.timestamp}",
+                    "p90Duration_sec": "{view.p90Duration.timestamp}",
+                    "avgDuration_sec": "{view.avgDuration.timestamp}"
+                }{#if view_hasNext},{/if}
                 {/for}
             ]
         }

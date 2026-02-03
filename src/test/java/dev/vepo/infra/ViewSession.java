@@ -18,17 +18,18 @@ public class ViewSession {
                                             .equals(Boolean.TRUE);
     }
 
-    public void injectScript(URL visitaScriptUrl) {
+    public void injectScript(URL visitaScriptUrl, String token) {
         // inject the tracking script
         ((JavascriptExecutor) driver).executeScript("""
                                                     (function(d) {
                                                         let script = d.createElement('script');
                                                         script.type = 'text/javascript';
                                                         script.async = true;
+                                                        script.setAttribute('data-token', '%s');
                                                         script.src = '%s';
                                                         d.getElementsByTagName('head')[0].appendChild(script);
                                                     }(document));
-                                                    """.formatted(visitaScriptUrl.toString()));
+                                                    """.formatted(token, visitaScriptUrl.toString()));
     }
 
 }

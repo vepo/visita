@@ -7,12 +7,13 @@
     // Import Angular modules
     import 'https://unpkg.com/zone.js@0.16.0/fesm2015/zone.min.js';
     
-    // Simple Angular-inspired router implementation for testing
+    // Simple Angular-inspired router implementation with HTML5 routing
     class Router {
       constructor() {
         this.routes = {};
         this.currentPath = '/';
         this.onNavigate = null;
+        this.useHashFallback = false;
       }
 
       config(routes) {
@@ -20,16 +21,26 @@
       }
 
       navigate(path) {
-        // Use history.pushState for HTML5 routing
-        history.pushState(null, '', this._getFullPath(path));
+        // Use HTML5 history.pushState for routing
+        try {
+          history.pushState({ path: path }, '', path);
+          this.currentPath = path;
+          this.renderView(path);
+          if (this.onNavigate) this.onNavigate(path);
+        } catch (e) {
+          // Fallback to hash routing if HTML5 routing fails (for file://)
+          console.warn('HTML5 routing failed, falling back to hash routing');
+          this.useHashFallback = true;
+          this._navigateWithHash(path);
+        }
+      }
+
+      _navigateWithHash(path) {
+        // Fallback method using hash routing
+        window.location.hash = `#${path}`;
         this.currentPath = path;
         this.renderView(path);
         if (this.onNavigate) this.onNavigate(path);
-      }
-
-      _getFullPath(path) {
-        // For file:// protocol, we need to use hash routing
-        return `#${path}`;
       }
 
       renderView(path) {
@@ -60,17 +71,40 @@
         }
       });
 
-      // Handle hash route changes (for file:// compatibility)
+      // Handle both HTML5 and hash routing
       const handleRouteChange = () => {
-        let path = window.location.hash.slice(1) || '/';
+        let path;
+        
+        if (router.useHashFallback) {
+          // Hash routing fallback
+          path = window.location.hash.slice(1) || '/';
+        } else {
+          // HTML5 routing
+          path = window.location.pathname || '/';
+          // If we're running from file:// protocol, default to root
+          if (path.startsWith('/') && window.location.protocol === 'file:') {
+            path = path.substring(window.location.pathname.lastIndexOf('/'));
+          }
+        }
+        
         // Remove any trailing slash except for root
         if (path !== '/' && path.endsWith('/')) {
           path = path.slice(0, -1);
         }
+        
+        // Ensure path starts with /
+        if (!path.startsWith('/')) {
+          path = '/' + path;
+        }
+        
         router.currentPath = path;
         router.renderView(path);
       };
 
+      // Handle popstate for HTML5 routing
+      window.addEventListener('popstate', handleRouteChange);
+      
+      // Also handle hashchange for fallback
       window.addEventListener('hashchange', handleRouteChange);
 
       // Intercept link clicks
@@ -79,12 +113,40 @@
         if (target.tagName === 'A' && target.hasAttribute('data-route')) {
           event.preventDefault();
           const path = target.getAttribute('data-route');
+          
+          // Update href for HTML5 routing
+          if (!router.useHashFallback) {
+            target.href = path;
+          }
+          
           router.navigate(path);
         }
       });
 
-      // Initial render
-      handleRouteChange();
+      // Initial render - try HTML5 routing first
+      try {
+        // Initialize with current path
+        handleRouteChange();
+        
+        // Update all links to use HTML5 routing
+        document.querySelectorAll('a[data-route]').forEach(link => {
+          const path = link.getAttribute('data-route');
+          link.href = path;
+        });
+        
+        console.log('HTML5 routing enabled');
+      } catch (e) {
+        console.log('Using hash routing fallback');
+        router.useHashFallback = true;
+        
+        // Update all links to use hash routing
+        document.querySelectorAll('a[data-route]').forEach(link => {
+          const path = link.getAttribute('data-route');
+          link.href = `#${path}`;
+        });
+        
+        handleRouteChange();
+      }
 
       // Expose router for navigation
       window.appRouter = router;
@@ -135,17 +197,17 @@
 <body>
   <div class="container">
     <nav>
-      <a id="link-dashboard" data-route="/" href="#">Dashboard</a>
-      <a id="link-products" data-route="/products" href="#">Products</a>
-      <a id="link-services" data-route="/services" href="#">Services</a>
-      <a id="link-contact" data-route="/contact" href="#">Contact</a>
+      <a id="link-dashboard" data-route="/" href="/">Dashboard</a>
+      <a id="link-products" data-route="/products" href="/products">Products</a>
+      <a id="link-services" data-route="/services" href="/services">Services</a>
+      <a id="link-contact" data-route="/contact" href="/contact">Contact</a>
     </nav>
 
     <div ng-view class="view" id="ng-view">
       <!-- angular view -->
     </div>
 
-    <p id="status">Latest Angular app ready (File Protocol Compatible)</p>
+    <p id="status">Latest Angular app ready with HTML5 Routing</p>
     
     <script type="module">
       // Import Angular modules after DOM is ready
@@ -165,7 +227,7 @@
       };
       
       console.log('Angular modules loaded:', Object.keys(window.ng));
-      document.getElementById('status').textContent = 'Latest Angular app ready - Angular v21.0.6 loaded';
+      document.getElementById('status').textContent = 'Latest Angular app ready - Angular v21.0.6 loaded with HTML5 Routing';
     </script>
   </div>
 </body>

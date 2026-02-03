@@ -1,0 +1,120 @@
+package dev.vepo.visita.dashboard;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+
+@ApplicationScoped
+public class StatsRepository {
+    private final EntityManager entityManager;
+
+    @Inject
+    public StatsRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public List<DailyStats> findDailyViews() {
+        return entityManager.createQuery("""
+                                         SELECT new DailyStats(DATE(v.accessTimestamp),
+                                                               COUNT(v.id),
+                                                               AVG(v.length),
+                                                               PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                               PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
+                                         FROM View v
+                                         WHERE v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                         GROUP BY DATE(v.accessTimestamp)
+                                         ORDER BY DATE(v.accessTimestamp) DESC
+                                         """, DailyStats.class)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<DailyStats> findDailyViewsPerHostname(String hostname) {
+        return entityManager.createQuery("""
+                                         SELECT new DailyStats(DATE(v.accessTimestamp),
+                                                               COUNT(v.id),
+                                                               AVG(v.length),
+                                                               PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                               PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
+                                         FROM View v
+                                         WHERE v.page.domain.hostname = :hostname AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                         GROUP BY DATE(v.accessTimestamp)
+                                         ORDER BY DATE(v.accessTimestamp) DESC
+                                         """, DailyStats.class)
+                            .setParameter("hostname", hostname)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<PageStats> findAllPageViews() {
+        return entityManager.createQuery("""
+                                         SELECT new PageStats(v.page,
+                                                              COUNT(v.id) as views,
+                                                              AVG(v.length) as avgDuration,
+                                                              PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                              PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.page IS NOT NULL AND v.length IS NOT NULL
+                                         GROUP BY v.page
+                                         ORDER BY views DESC
+                                         """, PageStats.class)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<PageStats> findAllPageViewsByHostname(String hostname) {
+        return entityManager.createQuery("""
+                                         SELECT new PageStats(v.page,
+                                                              COUNT(v.id) as views,
+                                                              AVG(v.length) as avgDuration,
+                                                              PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                              PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
+                                         GROUP BY v.page
+                                         ORDER BY views DESC
+                                         """, PageStats.class)
+                            .setParameter("hostname", hostname)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<PageStats> findPageViewsFromDate(LocalDateTime startDate) {
+        return entityManager.createQuery("""
+                                         SELECT new PageStats(v.page,
+                                                              COUNT(v.id) as views,
+                                                              AVG(v.length) as avgDuration,
+                                                              PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                              PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.page IS NOT NULL AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                         GROUP BY v.page
+                                         ORDER BY views DESC
+                                         """, PageStats.class)
+                            .setParameter("start_date", startDate)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<PageStats> findAllPageViewsByHostnameFromDate(String hostname, LocalDateTime startDate) {
+        return entityManager.createQuery("""
+                                         SELECT new PageStats(v.page,
+                                                              COUNT(v.id) as views,
+                                                              AVG(v.length) as avgDuration,
+                                                              PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                              PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                         GROUP BY v.page
+                                         ORDER BY views DESC
+                                         """,
+                                         PageStats.class)
+                            .setParameter("start_date", startDate)
+                            .setParameter("hostname", hostname)
+                            .getResultStream()
+                            .toList();
+    }
+}

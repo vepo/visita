@@ -6,22 +6,22 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Processar dados
-    const datas = [];
-    const visitas = [];
-    const avg70Values = [];
-    const avg90Values = [];
-    const tempoMedioValues = [];
+    const dates = [];
+    const views = [];
+    const p70DurationValues = [];
+    const p90DurationValues = [];
+    const avgDurationValues = [];
     
-    for (let i = 0; i < visitasData.visitasDiarias.length; i++) {
-        const item = visitasData.visitasDiarias[i];
-        const [year, month, day] = item.data.split('-');
-        datas.push(`${day}/${month}/${year}`);
-        visitas.push(item.visitas);
+    for (let i = 0; i < visitasData.dailyViews.length; i++) {
+        const item = visitasData.dailyViews[i];
+        const [year, month, day] = item.date.split('-');
+        dates.push(`${day}/${month}/${year}`);
+        views.push(item.views);
         
         // Converter tempo de string HH:MM:SS para segundos
-        avg70Values.push(item.avg70_sec);
-        avg90Values.push(item.avg90_sec);
-        tempoMedioValues.push(item.tempoMedio_sec);
+        p70DurationValues.push(item.p70Duration_sec);
+        p90DurationValues.push(item.p90Duration_sec);
+        avgDurationValues.push(item.avgDuration_sec);
     }
     
     // Função para formatar segundos para HH:MM:SS
@@ -42,15 +42,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 1. Gráfico de Número de Visitas (barras)
-    const ctxVisitas = document.getElementById('visitasDiariasChart');
+    const ctxVisitas = document.getElementById('daily-views-chart');
     if (ctxVisitas) {
-        const visitasDiariasChart = new Chart(ctxVisitas, {
+        const dailyViewsChart = new Chart(ctxVisitas, {
             type: 'bar',
             data: {
-                labels: datas,
+                labels: dates,
                 datasets: [{
                     label: 'Visitas',
-                    data: visitas,
+                    data: views,
                     backgroundColor: 'rgba(59, 130, 200, 0.7)',
                     borderColor: 'rgba(59, 130, 200, 1)',
                     borderWidth: 1,
@@ -103,16 +103,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 2. Gráfico de Métricas de Tempo (linhas)
-    const ctxTempo = document.getElementById('tempoMedioChart');
+    const ctxTempo = document.getElementById('avgDurationChart');
     if (ctxTempo) {
-        const tempoMedioChart = new Chart(ctxTempo, {
+        const avgDurationChart = new Chart(ctxTempo, {
             type: 'line',
             data: {
-                labels: datas,
+                labels: dates,
                 datasets: [
                     {
                         label: 'Tempo Médio',
-                        data: tempoMedioValues,
+                        data: avgDurationValues,
                         borderColor: 'rgba(59, 130, 200, 1)',
                         backgroundColor: 'rgba(59, 130, 200, 0.1)',
                         borderWidth: 2,
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {
                         label: 'P70',
-                        data: avg70Values,
+                        data: p70DurationValues,
                         borderColor: 'rgba(255, 99, 132, 1)',
                         backgroundColor: 'rgba(255, 99, 132, 0.1)',
                         borderWidth: 2,
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {
                         label: 'P90',
-                        data: avg90Values,
+                        data: p90DurationValues,
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
                         borderWidth: 2,
