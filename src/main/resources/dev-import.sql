@@ -144,7 +144,7 @@ BEGIN
             screen_resolution,
             timezone
         ) VALUES (
-            length_seconds * 1000,  -- Convert to milliseconds
+            length_seconds,
             access_timestamp,
             LEAST(
                 access_timestamp + (length_seconds || ' seconds')::INTERVAL,
