@@ -16,7 +16,7 @@ public class VisitaWebExceptionMapper implements ExceptionMapper<WebApplicationE
 
     @Override
     public Response toResponse(WebApplicationException exception) {
-        logger.error("WebApplicationException caught! Converting to error response!", exception);
+        logger.warn("WebApplicationException caught! Converting to error response!", exception);
         return Response.status(exception.getResponse().getStatus()).build();
     }
 
