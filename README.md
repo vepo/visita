@@ -121,7 +121,7 @@ POST /api/tracking/ping       // Keep-alive da sessão
 ### 1. Website Tradicional
 ```html
 <!-- Basta incluir o script -->
-<script async src="https://visita.vepo.dev/visita.js"></script>
+<script async src="https://visita.vepo.dev/visita.js" data-token="your-token"></script>
 ```
 
 ### 2. Single Page Application (SPA)
