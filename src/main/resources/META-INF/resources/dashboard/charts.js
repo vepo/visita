@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Extrair dados do elemento script
     const dataScript = document.getElementById('visitas-data');
-    const visitasData = {
-        visitasDiarias: JSON.parse(dataScript.textContent).visitasDiarias.sort((o1, o2) => o1.data.localeCompare(o2.data))
+    const dailyViews = {
+        data: JSON.parse(dataScript.textContent).dailyViews.sort((o1, o2) => o1.date.localeCompare(o2.date))
     };
     
     // Processar dados
@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const p90DurationValues = [];
     const avgDurationValues = [];
     
-    for (let i = 0; i < visitasData.dailyViews.length; i++) {
-        const item = visitasData.dailyViews[i];
+    for (let i = 0; i < dailyViews.data.length; i++) {
+        const item = dailyViews.data[i];
         const [year, month, day] = item.date.split('-');
         dates.push(`${day}/${month}/${year}`);
         views.push(item.views);
