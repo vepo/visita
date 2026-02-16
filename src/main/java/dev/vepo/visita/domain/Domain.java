@@ -22,13 +22,16 @@ public class Domain {
     @Column(nullable = false)
     private String token;
 
-    public Domain() {}
+    private boolean disabled;
+
+    public Domain() {
+        this.disabled = false;
+    }
 
     public Domain(String hostname, String token) {
-        Objects.requireNonNull(hostname, "'hostname' cannot be null!");
-        Objects.requireNonNull(token, "'token' cannot be null!");
-        this.hostname = hostname;
-        this.token = token;
+        this.hostname = Objects.requireNonNull(hostname, "'hostname' cannot be null!");
+        this.token = Objects.requireNonNull(token, "'token' cannot be null!");
+        this.disabled = false;
     }
 
     public Long getId() {
@@ -47,7 +50,23 @@ public class Domain {
         this.hostname = hostname;
     }
 
-        @Override
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(this.id);
     }
@@ -65,6 +84,6 @@ public class Domain {
 
     @Override
     public String toString() {
-        return "Domain[id=%d, hostname=%s]".formatted(id, hostname);
+        return "Domain[id=%d, hostname=%s, token=%s, disabled=%b]".formatted(id, hostname, token, disabled);
     }
 }
