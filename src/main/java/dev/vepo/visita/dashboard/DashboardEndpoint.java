@@ -2,6 +2,8 @@ package dev.vepo.visita.dashboard;
 
 import java.time.LocalDateTime;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
@@ -25,6 +27,7 @@ public class DashboardEndpoint {
     }
 
     @GET
+    @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance renderDashboard() {
         var dailyViews = dashboardService.getDailyViews();
@@ -38,6 +41,7 @@ public class DashboardEndpoint {
     }
 
     @GET
+    @Operation(hidden = true)
     @Path("/{hostname}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance renderDashboard(@PathParam("hostname") String hostname) {

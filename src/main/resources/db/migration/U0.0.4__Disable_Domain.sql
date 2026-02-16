@@ -1,0 +1,2 @@
+ALTER TABLE tb_domains 
+DROP COLUMN;
