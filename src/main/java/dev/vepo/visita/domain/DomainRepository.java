@@ -48,7 +48,7 @@ public class DomainRepository {
     }
 
     public Optional<Domain> findByHostname(String hostname) {
-        return entityManager.createQuery("FROM Domain WHERE hostname = :hostname WHERE disabled = false", Domain.class)
+        return entityManager.createQuery("FROM Domain WHERE hostname = :hostname AND disabled = false", Domain.class)
                             .setParameter("hostname", hostname)
                             .setMaxResults(1)
                             .getResultStream()
