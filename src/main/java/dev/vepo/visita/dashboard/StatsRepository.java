@@ -22,8 +22,8 @@ public class StatsRepository {
                                                        SELECT new DailyStats(DATE(v.accessTimestamp),
                                                                              COUNT(v.id),
                                                                              AVG(v.length),
-                                                                             PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
-                                                                             PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
+                                                                             PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                        FROM View v
                                                        WHERE v.referrer = :referrer AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                        GROUP BY DATE(v.accessTimestamp)
@@ -36,8 +36,8 @@ public class StatsRepository {
                                                      SELECT new DailyStats(DATE(v.accessTimestamp),
                                                                            COUNT(v.id),
                                                                            AVG(v.length),
-                                                                           PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
-                                                                           PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
+                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                      FROM View v
                                                      WHERE v.page.domain.hostname = :hostname AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                      GROUP BY DATE(v.accessTimestamp)
@@ -50,8 +50,8 @@ public class StatsRepository {
                                                    SELECT new DailyStats(DATE(v.accessTimestamp),
                                                                          COUNT(v.id),
                                                                          AVG(v.length),
-                                                                         PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length),
-                                                                         PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length))
+                                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
+                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                    FROM View v
                                                    WHERE v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                    GROUP BY DATE(v.accessTimestamp)
@@ -69,8 +69,8 @@ public class StatsRepository {
                                                        SELECT new PageStats(v.page,
                                                                             COUNT(v.id) as views,
                                                                             AVG(v.length) as avgDuration,
-                                                                            PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
                                                        WHERE v.page IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL
                                                        GROUP BY v.page
@@ -83,8 +83,8 @@ public class StatsRepository {
                                                      SELECT new PageStats(v.page,
                                                                           COUNT(v.id) as views,
                                                                           AVG(v.length) as avgDuration,
-                                                                          PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                          PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
                                                      GROUP BY v.page
@@ -97,8 +97,8 @@ public class StatsRepository {
                                                    SELECT new PageStats(v.page,
                                                                         COUNT(v.id) as views,
                                                                         AVG(v.length) as avgDuration,
-                                                                        PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                        PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                        PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
                                                    WHERE v.page IS NOT NULL AND v.length IS NOT NULL
                                                    GROUP BY v.page
@@ -116,8 +116,8 @@ public class StatsRepository {
                                                      SELECT new PageStats(v.page,
                                                                           COUNT(v.id) as views,
                                                                           AVG(v.length) as avgDuration,
-                                                                          PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                          PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
@@ -132,8 +132,8 @@ public class StatsRepository {
                                                      SELECT new PageStats(v.page,
                                                                           COUNT(v.id) as views,
                                                                           AVG(v.length) as avgDuration,
-                                                                          PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                          PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.page IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
@@ -148,8 +148,8 @@ public class StatsRepository {
                                                    SELECT new PageStats(v.page,
                                                                         COUNT(v.id) as views,
                                                                         AVG(v.length) as avgDuration,
-                                                                        PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                        PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                        PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
                                                    WHERE v.page IS NOT NULL AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
                                                    GROUP BY v.page
@@ -168,8 +168,8 @@ public class StatsRepository {
                                                      SELECT new ReferrerStats(v.referrer,
                                                                               COUNT(v.id) as views,
                                                                               AVG(v.length) as avgDuration,
-                                                                              PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                              PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                              PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.referrer IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
                                                      GROUP BY v.referrer
@@ -183,8 +183,8 @@ public class StatsRepository {
                                                        SELECT new ReferrerStats(v.referrer,
                                                                                 COUNT(v.id) as views,
                                                                                 AVG(v.length) as avgDuration,
-                                                                                PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                                PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                                PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                                PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
                                                        WHERE v.referrer IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL
                                                        GROUP BY v.referrer
@@ -198,8 +198,8 @@ public class StatsRepository {
                                                    SELECT new ReferrerStats(v.referrer,
                                                                             COUNT(v.id) as views,
                                                                             AVG(v.length) as avgDuration,
-                                                                            PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
-                                                                            PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
                                                    WHERE v.referrer IS NOT NULL AND v.length IS NOT NULL
                                                    GROUP BY v.referrer
