@@ -30,8 +30,10 @@ public class View {
 
     private String referrer;
 
+    @Column(name = "user_id")
     private String userId;
 
+    @Column(name = "tab_id")
     private String tabId;
 
     @Column(name = "user_agent")
