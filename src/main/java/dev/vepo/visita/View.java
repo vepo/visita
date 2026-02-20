@@ -30,6 +30,12 @@ public class View {
 
     private String referrer;
 
+    @Column(name = "user_id")
+    private String userId;
+
+    @Column(name = "tab_id")
+    private String tabId;
+
     @Column(name = "user_agent")
     private String userAgent;
 
@@ -46,8 +52,10 @@ public class View {
 
     public View() {}
 
-    public View(Page page, String referrer, String userAgent, String timezone, long timestamp) {
+    public View(Page page, String userId, String tabId, String referrer, String userAgent, String timezone, long timestamp) {
         this.page = page;
+        this.userId = userId;
+        this.tabId = tabId;
         this.referrer = referrer;
         this.timezone = timezone;
         this.userAgent = userAgent;
@@ -92,6 +100,22 @@ public class View {
 
     public void setReferrer(String referrer) {
         this.referrer = referrer;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getTabId() {
+        return tabId;
+    }
+
+    public void setTabId(String tabId) {
+        this.tabId = tabId;
     }
 
     public String getUserAgent() {
@@ -161,11 +185,15 @@ public class View {
 
     @Override
     public String toString() {
-        return "Visita [id=%s, page=%s, referrer=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id, page, referrer,
-                                                                                                                                           userAgent,
-                                                                                                                                           timezone,
-                                                                                                                                           accessTimestamp,
-                                                                                                                                           endTimestamp,
-                                                                                                                                           length);
+        return "View [id=%s, page=%s, referrer=%s, userId=%s, tabId=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id,
+                                                                                                                                                              page,
+                                                                                                                                                              referrer,
+                                                                                                                                                              userId,
+                                                                                                                                                              tabId,
+                                                                                                                                                              userAgent,
+                                                                                                                                                              timezone,
+                                                                                                                                                              accessTimestamp,
+                                                                                                                                                              endTimestamp,
+                                                                                                                                                              length);
     }
 }

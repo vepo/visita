@@ -36,7 +36,8 @@ public class TrackingEndpoint {
         logger.info("Starting new tracking session - request={}", request);
 
         var view = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
-                                                 request.timezone(), request.timestamp());
+                                                 request.timezone(), request.userId(), request.tabId(),
+                                                 request.timestamp());
 
         logger.info("Tracking session created successfully - view={}", view);
         return new TrackingResponse(view.getId());

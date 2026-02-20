@@ -44,6 +44,8 @@ public class ViewBuilder {
                               "test",
                               "test",
                               "test",
+                              "test",
+                              "test",
                               System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(length));
         visita.setEndTimestamp(LocalDateTime.now());
         repo.save(visita);
