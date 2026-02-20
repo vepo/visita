@@ -27,6 +27,14 @@ public class DashboardService {
         return statsRepository.findAllPageViews();
     }
 
+    public List<ReferrerStats> getReferrerStats() {
+        return statsRepository.findAllReferrerStats();
+    }
+
+    public List<ReferrerStats> getReferrerStats(String hostname) {
+        return statsRepository.findAllReferrerStatsByHostname(hostname);
+    }
+
     public List<PageStats> getPageViews(String hostname) {
         return statsRepository.findAllPageViewsByHostname(hostname);
     }

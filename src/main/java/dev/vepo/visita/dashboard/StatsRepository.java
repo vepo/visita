@@ -117,4 +117,38 @@ public class StatsRepository {
                             .getResultStream()
                             .toList();
     }
+
+    public List<ReferrerStats> findAllReferrerStats() {
+        return entityManager.createQuery("""
+                                         SELECT new ReferrerStats(v.referrer,
+                                                                  COUNT(v.id) as views,
+                                                                  AVG(v.length) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.referrer IS NOT NULL AND v.length IS NOT NULL
+                                         GROUP BY v.referrer
+                                         ORDER BY views DESC
+                                         """,
+                                         ReferrerStats.class)
+                            .getResultStream()
+                            .toList();
+    }
+
+    public List<ReferrerStats> findAllReferrerStatsByHostname(String hostname) {
+        return entityManager.createQuery("""
+                                         SELECT new ReferrerStats(v.referrer,
+                                                                  COUNT(v.id) as views,
+                                                                  AVG(v.length) as avgDuration,
+                                                                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                  PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                         FROM View v
+                                         WHERE v.referrer IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
+                                         GROUP BY v.referrer
+                                         ORDER BY views DESC
+                                         """, ReferrerStats.class)
+                            .setParameter("hostname", hostname)
+                            .getResultStream()
+                            .toList();
+    }
 }

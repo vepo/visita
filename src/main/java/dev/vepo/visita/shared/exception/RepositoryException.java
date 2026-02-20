@@ -1,4 +1,4 @@
-package dev.vepo.visita.dashboard.shared.exception;
+package dev.vepo.visita.shared.exception;
 
 public class RepositoryException extends RuntimeException {
     public RepositoryException(String message) {
