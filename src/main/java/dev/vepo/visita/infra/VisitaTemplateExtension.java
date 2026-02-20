@@ -1,5 +1,8 @@
 package dev.vepo.visita.infra;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import io.quarkus.qute.TemplateExtension;
 
 @TemplateExtension
@@ -16,6 +19,10 @@ public class VisitaTemplateExtension {
         int secs = seconds % 60;
 
         return String.format("%02d:%02d:%02d", hours, minutes, secs);
+    }
+
+    public static String urlEscape(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     public static String timestamp(Number value) {
