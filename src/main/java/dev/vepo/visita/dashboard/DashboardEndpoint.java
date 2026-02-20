@@ -18,24 +18,26 @@ public class DashboardEndpoint {
 
     private final Template dashboard;
 
-    private final DashboardService dashboardService;
+    private final StatsRepository statsRepository;
 
     @Inject
-    public DashboardEndpoint(DashboardService dashboardService, Template dashboard) {
-        this.dashboardService = dashboardService;
+    public DashboardEndpoint(StatsRepository statsRepository, Template dashboard) {
+        this.statsRepository = statsRepository;
         this.dashboard = dashboard;
     }
 
     @GET
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance renderDashboard() {
-        var dailyViews = dashboardService.getDailyViews();
+    public TemplateInstance render() {
+        var dailyViews = statsRepository.buildDailyViews(Selector.NONE, null);
         return dashboard.data("dailyViews", dailyViews)
-                        .data("pageViews", dashboardService.getPageViews())
-                        .data("referrerViews", dashboardService.getReferrerStats())
-                        .data("pageViewsLastWeek", dashboardService.getPageViews(LocalDateTime.now()
-                                                                                              .minusDays(7)))
+                        .data("pageViews", statsRepository.findAllPageViews(Selector.NONE, null))
+                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.NONE, null))
+                        .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.NONE,
+                                                                                         null,
+                                                                                         LocalDateTime.now()
+                                                                                                      .minusDays(7)))
                         .data("totalViews", dailyViews.stream()
                                                       .mapToLong(DailyStats::views)
                                                       .sum());
@@ -43,16 +45,35 @@ public class DashboardEndpoint {
 
     @GET
     @Operation(hidden = true)
-    @Path("/{hostname}")
+    @Path("/domain/{domain}")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance renderDashboard(@PathParam("hostname") String hostname) {
-        var dailyViews = dashboardService.getDailyViews(hostname);
+    public TemplateInstance renderDomain(@PathParam("domain") String domain) {
+        var dailyViews = statsRepository.buildDailyViews(Selector.DOMAIN, domain);
         return dashboard.data("dailyViews", dailyViews)
-                        .data("pageViews", dashboardService.getPageViews(hostname))
-                        .data("referrerViews", dashboardService.getReferrerStats(hostname))
-                        .data("pageViewsLastWeek", dashboardService.getPageViews(hostname,
-                                                                                 LocalDateTime.now()
-                                                                                              .minusDays(7)))
+                        .data("pageViews", statsRepository.findAllPageViews(Selector.DOMAIN, domain))
+                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.DOMAIN, domain))
+                        .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.DOMAIN,
+                                                                                         domain,
+                                                                                         LocalDateTime.now()
+                                                                                                      .minusDays(7)))
+                        .data("totalViews", dailyViews.stream()
+                                                      .mapToLong(DailyStats::views)
+                                                      .sum());
+    }
+
+    @GET
+    @Operation(hidden = true)
+    @Path("/referrer/{referrer}")
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance renderReferrer(@PathParam("referrer") String referrer) {
+        var dailyViews = statsRepository.buildDailyViews(Selector.REFERRER, referrer);
+        return dashboard.data("dailyViews", dailyViews)
+                        .data("pageViews", statsRepository.findAllPageViews(Selector.REFERRER, referrer))
+                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.REFERRER, referrer))
+                        .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.REFERRER,
+                                                                                         referrer,
+                                                                                         LocalDateTime.now()
+                                                                                                      .minusDays(7)))
                         .data("totalViews", dailyViews.stream()
                                                       .mapToLong(DailyStats::views)
                                                       .sum());
