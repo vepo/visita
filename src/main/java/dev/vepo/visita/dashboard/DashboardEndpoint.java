@@ -33,6 +33,7 @@ public class DashboardEndpoint {
         var dailyViews = dashboardService.getDailyViews();
         return dashboard.data("dailyViews", dailyViews)
                         .data("pageViews", dashboardService.getPageViews())
+                        .data("referrerViews", dashboardService.getReferrerStats())
                         .data("pageViewsLastWeek", dashboardService.getPageViews(LocalDateTime.now()
                                                                                               .minusDays(7)))
                         .data("totalViews", dailyViews.stream()
@@ -48,6 +49,7 @@ public class DashboardEndpoint {
         var dailyViews = dashboardService.getDailyViews(hostname);
         return dashboard.data("dailyViews", dailyViews)
                         .data("pageViews", dashboardService.getPageViews(hostname))
+                        .data("referrerViews", dashboardService.getReferrerStats(hostname))
                         .data("pageViewsLastWeek", dashboardService.getPageViews(hostname,
                                                                                  LocalDateTime.now()
                                                                                               .minusDays(7)))
