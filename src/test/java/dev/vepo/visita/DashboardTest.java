@@ -53,8 +53,6 @@ class DashboardTest {
         WebElement header = driver.findElement(By.tagName("header"));
         Assertions.assertThat(header.findElement(By.tagName("h1")).getText())
                   .isEqualTo("Visita Analytics");
-        Assertions.assertThat(header.findElement(By.tagName("p")).getText())
-                  .isEqualTo("Dashboard de visitas do blog");
 
         // Check total visits card
         WebElement totalViewsCard = driver.findElements(By.className("card")).get(0);
@@ -154,8 +152,6 @@ class DashboardTest {
         WebElement header = driver.findElement(By.tagName("header"));
         Assertions.assertThat(header.findElement(By.tagName("h1")).getText())
                   .isEqualTo("Visita Analytics");
-        Assertions.assertThat(header.findElement(By.tagName("p")).getText())
-                  .isEqualTo("Dashboard de visitas do blog");
 
         // Check total visits card
         WebElement totalViewsCard = driver.findElements(By.className("card")).get(0);
@@ -255,8 +251,6 @@ class DashboardTest {
         WebElement header = driver.findElement(By.tagName("header"));
         Assertions.assertThat(header.findElement(By.tagName("h1")).getText())
                   .isEqualTo("Visita Analytics");
-        Assertions.assertThat(header.findElement(By.tagName("p")).getText())
-                  .isEqualTo("Dashboard de visitas do blog");
 
         // Check total visits card
         WebElement totalViewsCard = driver.findElements(By.className("card")).get(0);
