@@ -183,7 +183,7 @@ public class StatsRepository {
     public List<RefererStats> findAllRefererStats(Selector selector, String parameter) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
-                                                     SELECT new RefererStats(v.referer,
+                                                     SELECT new RefererStats(v.originalView.referer,
                                                          COUNT(v.id) as views,
                                                          AVG(v.length) as avgDuration,
                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
@@ -192,7 +192,7 @@ public class StatsRepository {
                                                      WHERE v.referer IS NOT NULL AND 
                                                            v.page.domain.hostname = :hostname AND 
                                                            v.length IS NOT NULL
-                                                     GROUP BY v.referer
+                                                     GROUP BY v.originalView.referer
                                                      ORDER BY views DESC
                                                      """,
                                                      RefererStats.class)
@@ -200,7 +200,7 @@ public class StatsRepository {
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
-                                                       SELECT new RefererStats(v.referer,
+                                                       SELECT new RefererStats(v.originalView.referer,
                                                            COUNT(v.id) as views,
                                                            AVG(v.length) as avgDuration,
                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
@@ -209,7 +209,7 @@ public class StatsRepository {
                                                        WHERE v.referer IS NOT NULL AND 
                                                              v.originalView.referer = :referer AND 
                                                              v.length IS NOT NULL
-                                                       GROUP BY v.referer
+                                                       GROUP BY v.originalView.referer
                                                        ORDER BY views DESC
                                                        """,
                                                        RefererStats.class)
