@@ -9,7 +9,7 @@ DECLARE
     random_page_id BIGINT;
     length_seconds INTEGER;
     access_timestamp TIMESTAMP;
-    referrer TEXT;
+    referer TEXT;
     user_agent TEXT;
     user_id TEXT;
     tab_id TEXT;
@@ -88,8 +88,8 @@ BEGIN
         access_timestamp := NOW() - (RANDOM() * INTERVAL '128 days');
         length_seconds := FLOOR(RANDOM() * 3600);
         
-        -- Referrer
-        referrer := CASE 
+        -- Referer
+        referer := CASE 
             WHEN RANDOM() < 0.05 THEN NULL  -- 5% null
             WHEN RANDOM() < 0.3 THEN 'direct'  -- 30% direct
             WHEN RANDOM() < 0.6 THEN 'https://google.com'  -- 30% google
@@ -137,7 +137,7 @@ BEGIN
             access_timestamp,
             end_timestamp,
             page_id,
-            referrer,
+            referer,
             user_agent,
             user_id,
             tab_id,
@@ -151,7 +151,7 @@ BEGIN
                 NOW()
             ),
             random_page_id,
-            referrer,
+            referer,
             user_agent,
             user_id,
             tab_id,

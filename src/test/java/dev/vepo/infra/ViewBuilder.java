@@ -15,7 +15,7 @@ public class ViewBuilder {
 
     private String page;
     private Integer length;
-    private String referrer;
+    private String referer;
 
     public ViewBuilder() {
         page = null;
@@ -27,8 +27,8 @@ public class ViewBuilder {
         return this;
     }
 
-    public ViewBuilder withReferrer(String referrer) {
-        this.referrer = referrer;
+    public ViewBuilder withReferer(String referer) {
+        this.referer = referer;
         return this;
     }
 
@@ -49,7 +49,7 @@ public class ViewBuilder {
         var visita = new View(page,
                               "test",
                               "test",
-                              referrer,
+                              referer,
                               "test",
                               "test",
                               System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(length));

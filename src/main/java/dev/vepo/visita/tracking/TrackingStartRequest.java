@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record TrackingStartRequest(String language,
                                    @NotBlank String page,
-                                   String referrer,
+                                   String referer,
                                    String screenResolution,
                                    @NotBlank String tabId,
                                    @NotNull @Min(1) long timestamp,

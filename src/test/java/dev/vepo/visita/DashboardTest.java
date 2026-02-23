@@ -27,8 +27,8 @@ class DashboardTest {
     @TestHTTPResource("/dashboard/domain/blog.vepo.dev")
     URL blogDashboard;
 
-    @TestHTTPResource("/dashboard/referrer/direct")
-    URL referrerDashboard;
+    @TestHTTPResource("/dashboard/referer/direct")
+    URL refererDashboard;
 
     @BeforeEach
     void setup() {
@@ -233,15 +233,15 @@ class DashboardTest {
     }
 
     @Test
-    void dashboardShouldDisplayCorrectDataPerReferrer(WebDriver driver) {
+    void dashboardShouldDisplayCorrectDataPerReferer(WebDriver driver) {
         // Create some test data first
-        Given.visita().withPage("https://blog.vepo.dev/").withReferrer("direct").withLength(30).persist();
-        Given.visita().withPage("https://blog.vepo.dev/about").withReferrer("direct").withLength(45).persist();
-        Given.visita().withPage("https://cursos.vepo.dev/").withReferrer("direct").withLength(25).persist();
-        Given.visita().withPage("https://blog.vepo.dev/").withReferrer("google.com").withLength(25).persist();
+        Given.visita().withPage("https://blog.vepo.dev/").withReferer("direct").withLength(30).persist();
+        Given.visita().withPage("https://blog.vepo.dev/about").withReferer("direct").withLength(45).persist();
+        Given.visita().withPage("https://cursos.vepo.dev/").withReferer("direct").withLength(25).persist();
+        Given.visita().withPage("https://blog.vepo.dev/").withReferer("google.com").withLength(25).persist();
 
         // Navigate to the dashboard page
-        driver.navigate().to(referrerDashboard);
+        driver.navigate().to(refererDashboard);
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         // Wait for page to load and check title

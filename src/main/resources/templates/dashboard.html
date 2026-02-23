@@ -74,9 +74,9 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            {#for view in referrerViews}
+                            {#for view in refererViews}
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs"><a href="/dashboard/referrer/{view.referrer.urlEscape}">{view.referrer}</a></td>
+                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs"><a href="/dashboard/referer/{view.referer.urlEscape}">{view.referer}</a></td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{view.views}</td>
                                 <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p70Duration.formatSecondsToHHMMSS}</td>
                                 <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p90Duration.formatSecondsToHHMMSS}</td>

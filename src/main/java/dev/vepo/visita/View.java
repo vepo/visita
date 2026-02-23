@@ -28,7 +28,7 @@ public class View {
     @JoinColumn(name = "page_id")
     private Page page;
 
-    private String referrer;
+    private String referer;
 
     @Column(name = "user_id")
     private String userId;
@@ -52,11 +52,11 @@ public class View {
 
     public View() {}
 
-    public View(Page page, String userId, String tabId, String referrer, String userAgent, String timezone, long timestamp) {
+    public View(Page page, String userId, String tabId, String referer, String userAgent, String timezone, long timestamp) {
         this.page = page;
         this.userId = userId;
         this.tabId = tabId;
-        this.referrer = referrer;
+        this.referer = referer;
         this.timezone = timezone;
         this.userAgent = userAgent;
         this.accessTimestamp = Instant.ofEpochMilli(timestamp)
@@ -66,7 +66,7 @@ public class View {
 
     public View(Page page, long timestamp, View extended) {
         this.page = page;
-        this.referrer = extended.referrer;
+        this.referer = extended.referer;
         this.userAgent = extended.userAgent;
         this.timezone = extended.timezone;
         this.accessTimestamp = Instant.ofEpochMilli(timestamp)
@@ -94,12 +94,12 @@ public class View {
         return Objects.nonNull(page) && Objects.equals(path, page.getPath());
     }
 
-    public String getReferrer() {
-        return referrer;
+    public String getReferer() {
+        return referer;
     }
 
-    public void setReferrer(String referrer) {
-        this.referrer = referrer;
+    public void setReferer(String referer) {
+        this.referer = referer;
     }
 
     public String getUserId() {
@@ -185,9 +185,9 @@ public class View {
 
     @Override
     public String toString() {
-        return "View [id=%s, page=%s, referrer=%s, userId=%s, tabId=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id,
+        return "View [id=%s, page=%s, referer=%s, userId=%s, tabId=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id,
                                                                                                                                                               page,
-                                                                                                                                                              referrer,
+                                                                                                                                                              referer,
                                                                                                                                                               userId,
                                                                                                                                                               tabId,
                                                                                                                                                               userAgent,
