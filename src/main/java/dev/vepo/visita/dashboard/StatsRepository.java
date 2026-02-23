@@ -192,7 +192,7 @@ public class StatsRepository {
                                                      WHERE v.referer IS NOT NULL AND 
                                                            v.page.domain.hostname = :hostname AND 
                                                            v.length IS NOT NULL
-                                                     GROUP BY v.referer
+                                                     GROUP BY v.originalView.referer
                                                      ORDER BY views DESC
                                                      """,
                                                      RefererStats.class)
@@ -209,7 +209,7 @@ public class StatsRepository {
                                                        WHERE v.referer IS NOT NULL AND 
                                                              v.originalView.referer = :referer AND 
                                                              v.length IS NOT NULL
-                                                       GROUP BY v.referer
+                                                       GROUP BY v.originalView.referer
                                                        ORDER BY views DESC
                                                        """,
                                                        RefererStats.class)
