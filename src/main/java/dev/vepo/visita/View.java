@@ -50,6 +50,10 @@ public class View {
 
     private String timezone;
 
+    @ManyToOne
+    @JoinColumn(name = "id", referencedColumnName = "view_id", insertable = false, updatable = false)
+    private OriginalView originalView;
+
     public View() {}
 
     public View(Page page, String userId, String tabId, String referer, String userAgent, String timezone, long timestamp) {
@@ -167,6 +171,10 @@ public class View {
                                                                               .toLocalDateTime());
     }
 
+    public OriginalView getOriginalView() {
+        return originalView;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(this.id);
@@ -186,14 +194,14 @@ public class View {
     @Override
     public String toString() {
         return "View [id=%s, page=%s, referer=%s, userId=%s, tabId=%s, userAgent=%s, timezone=%s, accessTimestamp=%s, endTimestamp=%s, length=%s]".formatted(id,
-                                                                                                                                                              page,
-                                                                                                                                                              referer,
-                                                                                                                                                              userId,
-                                                                                                                                                              tabId,
-                                                                                                                                                              userAgent,
-                                                                                                                                                              timezone,
-                                                                                                                                                              accessTimestamp,
-                                                                                                                                                              endTimestamp,
-                                                                                                                                                              length);
+                                                                                                                                                             page,
+                                                                                                                                                             referer,
+                                                                                                                                                             userId,
+                                                                                                                                                             tabId,
+                                                                                                                                                             userAgent,
+                                                                                                                                                             timezone,
+                                                                                                                                                             accessTimestamp,
+                                                                                                                                                             endTimestamp,
+                                                                                                                                                             length);
     }
 }

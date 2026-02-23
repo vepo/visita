@@ -1,7 +1,10 @@
 package dev.vepo.infra;
 
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import dev.vepo.visita.View;
@@ -16,10 +19,14 @@ public class ViewBuilder {
     private String page;
     private Integer length;
     private String referer;
+    private Instant start;
+    private String userId;
+    private String tabId;
 
     public ViewBuilder() {
         page = null;
         length = null;
+        start = Instant.now();
     }
 
     public ViewBuilder withPage(String page) {
@@ -37,7 +44,22 @@ public class ViewBuilder {
         return this;
     }
 
-    private void updateDatabase() {
+    public ViewBuilder withStart(Instant start) {
+        this.start = start;
+        return this;
+    }
+
+    public ViewBuilder withUserId(String userId) {
+        this.userId = userId;
+        return this;
+    }
+
+    public ViewBuilder withTabId(String tabId) {
+        this.tabId = tabId;
+        return this;
+    }
+
+    private View updateDatabase() {
         var repo = Given.inject(ViewRepository.class);
         var domainRepository = Given.inject(DomainRepository.class);
         var pageRepository = Given.inject(PageRepository.class);
@@ -47,18 +69,18 @@ public class ViewBuilder {
         var page = pageRepository.findByHostnameAndPath(pageUrl.getHost(), pageUrl.getPath())
                                  .orElseGet(() -> pageRepository.save(new Page(domain, pageUrl.getPath())));
         var visita = new View(page,
-                              "test",
-                              "test",
+                              Optional.ofNullable(this.userId).orElseGet(() -> UUID.randomUUID().toString()),
+                              Optional.ofNullable(this.tabId).orElseGet(() -> UUID.randomUUID().toString()),
                               referer,
                               "test",
                               "test",
-                              System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(length));
+                              start.toEpochMilli() - TimeUnit.SECONDS.toMillis(length));
         visita.setEndTimestamp(LocalDateTime.now());
-        repo.save(visita);
+        return repo.save(visita);
     }
 
-    public void persist() {
-        Given.withTransaction(this::updateDatabase);
+    public View persist() {
+        return Given.withTransaction(this::updateDatabase);
     }
 
 }

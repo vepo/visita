@@ -25,7 +25,9 @@ public class StatsRepository {
                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                              PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                        FROM View v
-                                                       WHERE v.referer = :referer AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                       WHERE v.originalView IS NOT NULL AND
+                                                             v.originalView.referer = :referer AND 
+                                                             v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                        GROUP BY DATE(v.accessTimestamp)
                                                        ORDER BY DATE(v.accessTimestamp) DESC
                                                        """, DailyStats.class)
@@ -39,7 +41,8 @@ public class StatsRepository {
                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                      FROM View v
-                                                     WHERE v.page.domain.hostname = :hostname AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                     WHERE v.page.domain.hostname = :hostname AND 
+                                                           v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                      GROUP BY DATE(v.accessTimestamp)
                                                      ORDER BY DATE(v.accessTimestamp) DESC
                                                      """, DailyStats.class)
@@ -53,7 +56,8 @@ public class StatsRepository {
                                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                    FROM View v
-                                                   WHERE v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                   WHERE v.accessTimestamp IS NOT NULL AND 
+                                                         v.length IS NOT NULL
                                                    GROUP BY DATE(v.accessTimestamp)
                                                    ORDER BY DATE(v.accessTimestamp) DESC
                                                    """, DailyStats.class)
@@ -72,7 +76,9 @@ public class StatsRepository {
                                                                             PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.page IS NOT NULL AND v.referer = :referer AND v.length IS NOT NULL
+                                                       WHERE v.page IS NOT NULL AND 
+                                                             v.originalView IS NOT NULL AND
+                                                             v.originalView.referer = :referer AND v.length IS NOT NULL
                                                        GROUP BY v.page
                                                        ORDER BY views DESC
                                                        """, PageStats.class)
@@ -86,7 +92,9 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """, PageStats.class)
@@ -100,7 +108,8 @@ public class StatsRepository {
                                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.page IS NOT NULL AND v.length IS NOT NULL
+                                                   WHERE v.page IS NOT NULL AND 
+                                                         v.length IS NOT NULL
                                                    GROUP BY v.page
                                                    ORDER BY views DESC
                                                    """, PageStats.class)
@@ -119,7 +128,10 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL AND 
+                                                           v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """,
@@ -135,7 +147,11 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.referer = :referer AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.originalView IS NOT NULL AND
+                                                           v.originalView.referer = :referer AND 
+                                                           v.length IS NOT NULL AND 
+                                                           v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """,
@@ -151,7 +167,9 @@ public class StatsRepository {
                                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.page IS NOT NULL AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                   WHERE v.page IS NOT NULL AND 
+                                                         v.length IS NOT NULL AND 
+                                                         v.accessTimestamp >= :start_date
                                                    GROUP BY v.page
                                                    ORDER BY views DESC
                                                    """, PageStats.class)
@@ -166,12 +184,14 @@ public class StatsRepository {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
                                                      SELECT new RefererStats(v.referer,
-                                                                              COUNT(v.id) as views,
-                                                                              AVG(v.length) as avgDuration,
-                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                         COUNT(v.id) as views,
+                                                         AVG(v.length) as avgDuration,
+                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                               PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.referer IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
+                                                     WHERE v.referer IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL
                                                      GROUP BY v.referer
                                                      ORDER BY views DESC
                                                      """,
@@ -181,12 +201,14 @@ public class StatsRepository {
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
                                                        SELECT new RefererStats(v.referer,
-                                                                                COUNT(v.id) as views,
-                                                                                AVG(v.length) as avgDuration,
-                                                                                PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                           COUNT(v.id) as views,
+                                                           AVG(v.length) as avgDuration,
+                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                                 PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.referer IS NOT NULL AND v.referer = :referer AND v.length IS NOT NULL
+                                                       WHERE v.referer IS NOT NULL AND 
+                                                             v.originalView.referer = :referer AND 
+                                                             v.length IS NOT NULL
                                                        GROUP BY v.referer
                                                        ORDER BY views DESC
                                                        """,
@@ -196,12 +218,13 @@ public class StatsRepository {
                                           .toList();
             case NONE -> entityManager.createQuery("""
                                                    SELECT new RefererStats(v.referer,
-                                                                            COUNT(v.id) as views,
-                                                                            AVG(v.length) as avgDuration,
-                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                       COUNT(v.id) as views,
+                                                       AVG(v.length) as avgDuration,
+                                                       PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.referer IS NOT NULL AND v.length IS NOT NULL
+                                                   WHERE v.referer IS NOT NULL AND 
+                                                         v.length IS NOT NULL
                                                    GROUP BY v.referer
                                                    ORDER BY views DESC
                                                    """,
