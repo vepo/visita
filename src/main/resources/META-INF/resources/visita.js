@@ -208,7 +208,7 @@ class VisitaAnalytics {
             userId: this.identifiers.userId,
             tabId: this.identifiers.tabId,
             page: window.location.href,
-            referrer: document.referrer || 'direct',
+            referer: document.referer || 'direct',
             userAgent: navigator.userAgent,
             screenResolution: `${window.screen.width}x${window.screen.height}`,
             colorDepth: window.screen.colorDepth,

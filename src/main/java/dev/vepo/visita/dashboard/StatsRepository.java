@@ -25,11 +25,13 @@ public class StatsRepository {
                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                              PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                        FROM View v
-                                                       WHERE v.referrer = :referrer AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                       WHERE v.originalView IS NOT NULL AND
+                                                             v.originalView.referer = :referer AND 
+                                                             v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                        GROUP BY DATE(v.accessTimestamp)
                                                        ORDER BY DATE(v.accessTimestamp) DESC
                                                        """, DailyStats.class)
-                                          .setParameter("referrer", parameter)
+                                          .setParameter("referer", parameter)
                                           .getResultStream()
                                           .toList();
             case DOMAIN -> entityManager.createQuery("""
@@ -39,7 +41,8 @@ public class StatsRepository {
                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                      FROM View v
-                                                     WHERE v.page.domain.hostname = :hostname AND v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                     WHERE v.page.domain.hostname = :hostname AND 
+                                                           v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
                                                      GROUP BY DATE(v.accessTimestamp)
                                                      ORDER BY DATE(v.accessTimestamp) DESC
                                                      """, DailyStats.class)
@@ -53,7 +56,8 @@ public class StatsRepository {
                                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                    FROM View v
-                                                   WHERE v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                   WHERE v.accessTimestamp IS NOT NULL AND 
+                                                         v.length IS NOT NULL
                                                    GROUP BY DATE(v.accessTimestamp)
                                                    ORDER BY DATE(v.accessTimestamp) DESC
                                                    """, DailyStats.class)
@@ -72,11 +76,13 @@ public class StatsRepository {
                                                                             PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.page IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL
+                                                       WHERE v.page IS NOT NULL AND 
+                                                             v.originalView IS NOT NULL AND
+                                                             v.originalView.referer = :referer AND v.length IS NOT NULL
                                                        GROUP BY v.page
                                                        ORDER BY views DESC
                                                        """, PageStats.class)
-                                          .setParameter("referrer", parameter)
+                                          .setParameter("referer", parameter)
                                           .getResultStream()
                                           .toList();
             case DOMAIN -> entityManager.createQuery("""
@@ -86,7 +92,9 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """, PageStats.class)
@@ -100,7 +108,8 @@ public class StatsRepository {
                                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.page IS NOT NULL AND v.length IS NOT NULL
+                                                   WHERE v.page IS NOT NULL AND 
+                                                         v.length IS NOT NULL
                                                    GROUP BY v.page
                                                    ORDER BY views DESC
                                                    """, PageStats.class)
@@ -119,7 +128,10 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL AND 
+                                                           v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """,
@@ -135,13 +147,17 @@ public class StatsRepository {
                                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                           PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.page IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                     WHERE v.page IS NOT NULL AND 
+                                                           v.originalView IS NOT NULL AND
+                                                           v.originalView.referer = :referer AND 
+                                                           v.length IS NOT NULL AND 
+                                                           v.accessTimestamp >= :start_date
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """,
                                                      PageStats.class)
                                         .setParameter("start_date", startDate)
-                                        .setParameter("referrer", parameter)
+                                        .setParameter("referer", parameter)
                                         .getResultStream()
                                         .toList();
             case NONE -> entityManager.createQuery("""
@@ -151,7 +167,9 @@ public class StatsRepository {
                                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.page IS NOT NULL AND v.length IS NOT NULL AND v.accessTimestamp >= :start_date
+                                                   WHERE v.page IS NOT NULL AND 
+                                                         v.length IS NOT NULL AND 
+                                                         v.accessTimestamp >= :start_date
                                                    GROUP BY v.page
                                                    ORDER BY views DESC
                                                    """, PageStats.class)
@@ -162,50 +180,56 @@ public class StatsRepository {
         };
     }
 
-    public List<ReferrerStats> findAllReferrerStats(Selector selector, String parameter) {
+    public List<RefererStats> findAllRefererStats(Selector selector, String parameter) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
-                                                     SELECT new ReferrerStats(v.referrer,
-                                                                              COUNT(v.id) as views,
-                                                                              AVG(v.length) as avgDuration,
-                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                     SELECT new RefererStats(v.referer,
+                                                         COUNT(v.id) as views,
+                                                         AVG(v.length) as avgDuration,
+                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                               PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.referrer IS NOT NULL AND v.page.domain.hostname = :hostname AND v.length IS NOT NULL
-                                                     GROUP BY v.referrer
+                                                     WHERE v.referer IS NOT NULL AND 
+                                                           v.page.domain.hostname = :hostname AND 
+                                                           v.length IS NOT NULL
+                                                     GROUP BY v.referer
                                                      ORDER BY views DESC
                                                      """,
-                                                     ReferrerStats.class)
+                                                     RefererStats.class)
                                         .setParameter("hostname", parameter)
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
-                                                       SELECT new ReferrerStats(v.referrer,
-                                                                                COUNT(v.id) as views,
-                                                                                AVG(v.length) as avgDuration,
-                                                                                PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                       SELECT new RefererStats(v.referer,
+                                                           COUNT(v.id) as views,
+                                                           AVG(v.length) as avgDuration,
+                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                                 PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.referrer IS NOT NULL AND v.referrer = :referrer AND v.length IS NOT NULL
-                                                       GROUP BY v.referrer
+                                                       WHERE v.referer IS NOT NULL AND 
+                                                             v.originalView.referer = :referer AND 
+                                                             v.length IS NOT NULL
+                                                       GROUP BY v.referer
                                                        ORDER BY views DESC
                                                        """,
-                                                       ReferrerStats.class)
-                                          .setParameter("referrer", parameter)
+                                                       RefererStats.class)
+                                          .setParameter("referer", parameter)
                                           .getResultStream()
                                           .toList();
             case NONE -> entityManager.createQuery("""
-                                                   SELECT new ReferrerStats(v.referrer,
-                                                                            COUNT(v.id) as views,
-                                                                            AVG(v.length) as avgDuration,
-                                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                   SELECT new RefererStats(v.originalView.referer,
+                                                       COUNT(v.id) as views,
+                                                       AVG(v.length) as avgDuration,
+                                                       PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.referrer IS NOT NULL AND v.length IS NOT NULL
-                                                   GROUP BY v.referrer
+                                                   WHERE v.referer IS NOT NULL AND 
+                                                         v.originalView.referer IS NOT NULL AND 
+                                                         v.length IS NOT NULL
+                                                   GROUP BY v.originalView.referer
                                                    ORDER BY views DESC
                                                    """,
-                                                   ReferrerStats.class)
+                                                   RefererStats.class)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));

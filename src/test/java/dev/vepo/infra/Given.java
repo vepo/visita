@@ -2,8 +2,11 @@ package dev.vepo.infra;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.function.Supplier;
+
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.enterprise.inject.spi.CDI;
+import jakarta.persistence.EntityManager;
 
 public abstract class Given {
     private Given() {
@@ -26,14 +29,32 @@ public abstract class Given {
         } catch (Exception e) {
             QuarkusTransaction.rollback();
             fail("Fail to create transaction!", e);
+        } finally {
+            inject(EntityManager.class).clear();
         }
     }
 
-    public static ViewBuilder visita() {
+    public static <T> T withTransaction(Supplier<T> block) {
+        try {
+            QuarkusTransaction.begin();
+            var obj = block.get();
+            QuarkusTransaction.commit();
+
+            return obj;
+        } catch (Exception e) {
+            QuarkusTransaction.rollback();
+            fail("Fail to create transaction!", e);
+            return null;
+        } finally {
+            inject(EntityManager.class).clear();
+        }
+    }
+
+    public static ViewBuilder view() {
         return new ViewBuilder();
     }
 
-    public static DomainBuilder domain(){
+    public static DomainBuilder domain() {
         return new DomainBuilder();
     }
 }

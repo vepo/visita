@@ -33,7 +33,7 @@ public class DashboardEndpoint {
         var dailyViews = statsRepository.buildDailyViews(Selector.NONE, null);
         return dashboard.data("dailyViews", dailyViews)
                         .data("pageViews", statsRepository.findAllPageViews(Selector.NONE, null))
-                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.NONE, null))
+                        .data("refererViews", statsRepository.findAllRefererStats(Selector.NONE, null))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.NONE,
                                                                                          null,
                                                                                          LocalDateTime.now()
@@ -51,7 +51,7 @@ public class DashboardEndpoint {
         var dailyViews = statsRepository.buildDailyViews(Selector.DOMAIN, domain);
         return dashboard.data("dailyViews", dailyViews)
                         .data("pageViews", statsRepository.findAllPageViews(Selector.DOMAIN, domain))
-                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.DOMAIN, domain))
+                        .data("refererViews", statsRepository.findAllRefererStats(Selector.DOMAIN, domain))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.DOMAIN,
                                                                                          domain,
                                                                                          LocalDateTime.now()
@@ -63,15 +63,15 @@ public class DashboardEndpoint {
 
     @GET
     @Operation(hidden = true)
-    @Path("/referrer/{referrer}")
+    @Path("/referer/{referer}")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance renderReferrer(@PathParam("referrer") String referrer) {
-        var dailyViews = statsRepository.buildDailyViews(Selector.REFERRER, referrer);
+    public TemplateInstance renderReferer(@PathParam("referer") String referer) {
+        var dailyViews = statsRepository.buildDailyViews(Selector.REFERRER, referer);
         return dashboard.data("dailyViews", dailyViews)
-                        .data("pageViews", statsRepository.findAllPageViews(Selector.REFERRER, referrer))
-                        .data("referrerViews", statsRepository.findAllReferrerStats(Selector.REFERRER, referrer))
+                        .data("pageViews", statsRepository.findAllPageViews(Selector.REFERRER, referer))
+                        .data("refererViews", statsRepository.findAllRefererStats(Selector.REFERRER, referer))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.REFERRER,
-                                                                                         referrer,
+                                                                                         referer,
                                                                                          LocalDateTime.now()
                                                                                                       .minusDays(7)))
                         .data("totalViews", dailyViews.stream()

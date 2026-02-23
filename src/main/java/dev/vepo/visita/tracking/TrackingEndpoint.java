@@ -35,7 +35,7 @@ public class TrackingEndpoint {
     public TrackingResponse access(@Valid TrackingStartRequest request) {
         logger.info("Starting new tracking session - request={}", request);
 
-        var view = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
+        var view = visitaService.registrarAcesso(request.page(), request.referer(), request.userAgent(),
                                                  request.timezone(), request.userId(), request.tabId(),
                                                  request.timestamp());
 

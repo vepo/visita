@@ -27,8 +27,8 @@ class DashboardTest {
     @TestHTTPResource("/dashboard/domain/blog.vepo.dev")
     URL blogDashboard;
 
-    @TestHTTPResource("/dashboard/referrer/direct")
-    URL referrerDashboard;
+    @TestHTTPResource("/dashboard/referer/direct")
+    URL refererDashboard;
 
     @BeforeEach
     void setup() {
@@ -38,9 +38,9 @@ class DashboardTest {
     @Test
     void dashboardShouldDisplayCorrectData(WebDriver driver) {
         // Create some test data first
-        Given.visita().withPage("https://localhost:8080/index.html").withLength(30).persist();
-        Given.visita().withPage("https://localhost:8080/about.html").withLength(45).persist();
-        Given.visita().withPage("https://localhost:8080/index.html").withLength(25).persist();
+        Given.view().withPage("https://localhost:8080/index.html").withLength(30).persist();
+        Given.view().withPage("https://localhost:8080/about.html").withLength(45).persist();
+        Given.view().withPage("https://localhost:8080/index.html").withLength(25).persist();
 
         // Navigate to the dashboard page
         driver.navigate().to(mainDashboard);
@@ -136,10 +136,10 @@ class DashboardTest {
     @Test
     void dashboardShouldDisplayCorrectDataPerDomain(WebDriver driver) {
         // Create some test data first
-        Given.visita().withPage("https://blog.vepo.dev/").withLength(30).persist();
-        Given.visita().withPage("https://blog.vepo.dev/about").withLength(45).persist();
-        Given.visita().withPage("https://blog.vepo.dev/").withLength(25).persist();
-        Given.visita().withPage("https://cursos.vepo.dev/").withLength(25).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withLength(30).persist();
+        Given.view().withPage("https://blog.vepo.dev/about").withLength(45).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withLength(25).persist();
+        Given.view().withPage("https://cursos.vepo.dev/").withLength(25).persist();
 
         // Navigate to the dashboard page
         driver.navigate().to(blogDashboard);
@@ -233,15 +233,15 @@ class DashboardTest {
     }
 
     @Test
-    void dashboardShouldDisplayCorrectDataPerReferrer(WebDriver driver) {
+    void dashboardShouldDisplayCorrectDataPerReferer(WebDriver driver) {
         // Create some test data first
-        Given.visita().withPage("https://blog.vepo.dev/").withReferrer("direct").withLength(30).persist();
-        Given.visita().withPage("https://blog.vepo.dev/about").withReferrer("direct").withLength(45).persist();
-        Given.visita().withPage("https://cursos.vepo.dev/").withReferrer("direct").withLength(25).persist();
-        Given.visita().withPage("https://blog.vepo.dev/").withReferrer("google.com").withLength(25).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withReferer("direct").withLength(30).persist();
+        Given.view().withPage("https://blog.vepo.dev/about").withReferer("direct").withLength(45).persist();
+        Given.view().withPage("https://cursos.vepo.dev/").withReferer("direct").withLength(25).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withReferer("google.com").withLength(25).persist();
 
         // Navigate to the dashboard page
-        driver.navigate().to(referrerDashboard);
+        driver.navigate().to(refererDashboard);
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         // Wait for page to load and check title
@@ -376,7 +376,7 @@ class DashboardTest {
         // Create a new visit (simulating backend data change)
         // In a real scenario, you might need to refresh the page or it might
         // auto-update
-        Given.visita().withPage("https://localhost:8080/new-page.html").withLength(60).persist();
+        Given.view().withPage("https://localhost:8080/new-page.html").withLength(60).persist();
 
         // Refresh dashboard to see updated data
         driver.navigate().refresh();

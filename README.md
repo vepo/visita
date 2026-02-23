@@ -41,7 +41,7 @@ O script carrega de forma assíncrona e se auto-inicializa automaticamente.
   tabId: "tab-unico",
   visitaId: "sessao-atual",
   page: "url-completa",
-  referrer: "origem",
+  referer: "origem",
   userAgent: "navegador",
   screenResolution: "1920x1080",
   colorDepth: 24,
@@ -222,7 +222,7 @@ O sistema emite logs informativos no console:
 - **Sessões Ativas** - Por usuário e por aba
 - **Duração de Sessão** - Tempo entre access/exit
 - **Inatividade** - Períodos sem interação
-- **Origens** - Referrers e URLs de entrada
+- **Origens** - Referers e URLs de entrada
 - **Dispositivos** - Resolução, navegador, idioma
 
 ### Exemplo de Dashboard SQL
