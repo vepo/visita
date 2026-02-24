@@ -280,19 +280,19 @@ public class StatsRepository {
                                                                    )
                                                                    SELECT currentDay,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN (SELECT tvor.id 
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
                                                                                                                        FROM tb_views_original_referer tvor 
                                                                                                                        WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
                                                                                                                 access_timestamp >  currentDay) as dailyActiveUsers,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN (SELECT tvor.id 
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
                                                                                                                        FROM tb_views_original_referer tvor 
                                                                                                                        WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
                                                                                                                 access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN (SELECT tvor.id 
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
                                                                                                                        FROM tb_views_original_referer tvor
                                                                                                                        WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
@@ -376,15 +376,21 @@ public class StatsRepository {
                                                                    )
                                                                    SELECT currentDay,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN(SELECT id FROM tb_views_original_referer WHERE original_referer = :referer) AND
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
+                                                                                                                       FROM tb_views_original_referer tvor
+                                                                                                                       WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
                                                                                                                 access_timestamp >  currentDay) as dailyActiveUsers,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN(SELECT id FROM tb_views_original_referer WHERE original_referer = :referer) AND
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
+                                                                                                                       FROM tvor.tb_views_original_referer tvor
+                                                                                                                       WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
                                                                                                                 access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
                                                                           (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                          WHERE id IN(SELECT id FROM tb_views_original_referer WHERE original_referer = :referer) AND
+                                                                                                          WHERE id IN (SELECT tvor.view_id 
+                                                                                                                       FROM tb_views_original_referer  tvor
+                                                                                                                       WHERE tvor.original_referer = :referer) AND
                                                                                                                 access_timestamp <= currentDay + interval '1 day' AND
                                                                                                                 access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
                                                                    FROM available_days
