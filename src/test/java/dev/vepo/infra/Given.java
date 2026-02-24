@@ -70,14 +70,14 @@ public abstract class Given {
         public Header authenticated() {
             Instant now = Instant.now();
             var token = Jwt.issuer(ConfigProvider.getConfig().getValue("mp.jwt.verify.issuer", String.class))
-                    .upn(username)
-                    .claim("username", username)
-                    .claim("id", id)
-                    .claim("email", email)
-                    .groups(roles)
-                    .issuedAt(now)
-                    .expiresAt(now.plus(1, ChronoUnit.DAYS))
-                    .sign();
+                           .upn(username)
+                           .claim("username", username)
+                           .claim("id", id)
+                           .claim("email", email)
+                           .groups(roles)
+                           .issuedAt(now)
+                           .expiresAt(now.plus(1, ChronoUnit.DAYS))
+                           .sign();
             return new Header("Authorization", "Bearer %s".formatted(token));
         }
     }
@@ -85,7 +85,6 @@ public abstract class Given {
     public static User admin() {
         return new User(1, "admin", "admin@passport.vepo.dev", Set.of(RequiredRoles.ADMIN));
     }
-
 
     public static User nonAdmin() {
         return new User(2, "user", "user@passport.vepo.dev", Set.of());

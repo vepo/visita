@@ -31,43 +31,43 @@ class CreateDomainEndpointTest {
     @Test
     void createDomainTest() {
         given().header(admin.authenticated())
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(new CreateDomainRequest(VALID_HOSTNAME))
-                .when()
-                .post("/api/domains")
-                .then()
-                .statusCode(Status.OK.getStatusCode())
-                .body("id", greaterThan(0))
-                .body("hostname", not(empty()))
-                .body("token", not(empty()));
+               .contentType(ContentType.JSON)
+               .accept(ContentType.JSON)
+               .body(new CreateDomainRequest(VALID_HOSTNAME))
+               .when()
+               .post("/api/domains")
+               .then()
+               .statusCode(Status.OK.getStatusCode())
+               .body("id", greaterThan(0))
+               .body("hostname", not(empty()))
+               .body("token", not(empty()));
     }
 
     @Test
     void createDomainRequiresAdminTest() {
         given().header(nonAdmin.authenticated())
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(new CreateDomainRequest(VALID_HOSTNAME))
-                .when()
-                .post("/api/domains")
-                .then()
-                .statusCode(Status.FORBIDDEN.getStatusCode());
+               .contentType(ContentType.JSON)
+               .accept(ContentType.JSON)
+               .body(new CreateDomainRequest(VALID_HOSTNAME))
+               .when()
+               .post("/api/domains")
+               .then()
+               .statusCode(Status.FORBIDDEN.getStatusCode());
     }
 
     @Test
     void createDomainValidateIfDomainExistTest() {
         Given.domain()
-                .withHostname(VALID_HOSTNAME)
-                .withToken(VALID_TOKEN)
-                .persist();
+             .withHostname(VALID_HOSTNAME)
+             .withToken(VALID_TOKEN)
+             .persist();
         given().header(admin.authenticated())
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(new CreateDomainRequest(VALID_HOSTNAME))
-                .when()
-                .post("/api/domains")
-                .then()
-                .statusCode(Status.CONFLICT.getStatusCode());
+               .contentType(ContentType.JSON)
+               .accept(ContentType.JSON)
+               .body(new CreateDomainRequest(VALID_HOSTNAME))
+               .when()
+               .post("/api/domains")
+               .then()
+               .statusCode(Status.CONFLICT.getStatusCode());
     }
 }
