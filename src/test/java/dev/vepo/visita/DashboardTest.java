@@ -89,7 +89,7 @@ class DashboardTest {
         var chartTitles = dailyVisitsCard.findElements(By.tagName("h3"));
         Assertions.assertThat(chartTitles)
                   .extracting(WebElement::getText)
-                  .containsExactlyInAnyOrder("Número de Visitas", "Métricas de Tempo");
+                  .containsExactlyInAnyOrder("Número de Visitas", "Usuários Recorrentes", "Métricas de Tempo");
 
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
@@ -188,7 +188,7 @@ class DashboardTest {
         var chartTitles = dailyVisitsCard.findElements(By.tagName("h3"));
         Assertions.assertThat(chartTitles)
                   .extracting(WebElement::getText)
-                  .containsExactlyInAnyOrder("Número de Visitas", "Métricas de Tempo");
+                  .containsExactlyInAnyOrder("Número de Visitas", "Usuários Recorrentes", "Métricas de Tempo");
 
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
@@ -287,7 +287,7 @@ class DashboardTest {
         var chartTitles = dailyVisitsCard.findElements(By.tagName("h3"));
         Assertions.assertThat(chartTitles)
                   .extracting(WebElement::getText)
-                  .containsExactlyInAnyOrder("Número de Visitas", "Métricas de Tempo");
+                  .containsExactlyInAnyOrder("Número de Visitas", "Usuários Recorrentes", "Métricas de Tempo");
 
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
@@ -330,7 +330,6 @@ class DashboardTest {
         Assertions.assertThat(footer.getText())
                   .isEqualTo("Visita Analytics v1.0 - Dashboard de monitoramento");
     }
-
 
     @Test
     void dashboardShouldHandleEmptyData(WebDriver driver) {
