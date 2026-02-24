@@ -38,6 +38,7 @@ public class DomainRepository {
             return search(this);
         }
     }
+
     private static final Logger logger = LoggerFactory.getLogger(DomainRepository.class);
 
     private final EntityManager entityManager;

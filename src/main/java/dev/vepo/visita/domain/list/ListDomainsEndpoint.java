@@ -20,19 +20,18 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ListDomainsEndpoint {
-    private final DomainRepository domainRepository ;
+    private final DomainRepository domainRepository;
 
     @Inject
     public ListDomainsEndpoint(DomainRepository domainRepository) {
         this.domainRepository = domainRepository;
     }
 
-
     @GET
     public List<DomainResponse> list() {
         return this.domainRepository.findAll()
-                                  .stream()
-                                  .map(DomainResponse::from)
-                                  .toList();
+                                    .stream()
+                                    .map(DomainResponse::from)
+                                    .toList();
     }
 }

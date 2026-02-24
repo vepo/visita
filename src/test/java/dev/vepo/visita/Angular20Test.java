@@ -32,10 +32,10 @@ class Angular20Test {
     @BeforeEach
     void cleanup() {
         Given.cleanDatabase();
-            Given.domain()
-                 .withHostname("localhost")
-                 .withToken("token")
-                 .persist();
+        Given.domain()
+             .withHostname("localhost")
+             .withToken("token")
+             .persist();
     }
 
     @Test

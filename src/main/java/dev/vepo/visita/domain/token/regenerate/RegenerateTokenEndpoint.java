@@ -23,7 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RegenerateTokenEndpoint {
-        private final DomainRepository domainRepository;
+    private final DomainRepository domainRepository;
 
     @Inject
     public RegenerateTokenEndpoint(DomainRepository domainRepository) {

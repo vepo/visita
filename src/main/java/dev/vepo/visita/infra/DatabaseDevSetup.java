@@ -16,7 +16,7 @@ import jakarta.transaction.Transactional;
 @ApplicationScoped
 @IfBuildProfile(anyOf = { "dev" })
 public class DatabaseDevSetup {
-     private static final Logger logger = LoggerFactory.getLogger(DatabaseDevSetup.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseDevSetup.class);
     private EntityManager entityManager;
 
     @Inject
