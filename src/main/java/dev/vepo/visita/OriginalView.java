@@ -31,7 +31,6 @@ public class OriginalView {
         this.referer = referer;
     }
 
-
     @Override
     public String toString() {
         return "OriginalView[id=%d, referer=%s]".formatted(id, referer);
