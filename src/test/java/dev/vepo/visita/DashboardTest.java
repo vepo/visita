@@ -94,7 +94,7 @@ class DashboardTest {
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
                   .isNotNull();
-        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avgDurationChart")))
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avg-duration-chart")))
                   .isNotNull();
 
         // Verify visits by page table structure
@@ -193,7 +193,7 @@ class DashboardTest {
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
                   .isNotNull();
-        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avgDurationChart")))
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avg-duration-chart")))
                   .isNotNull();
 
         // Verify visits by page table structure
@@ -292,7 +292,7 @@ class DashboardTest {
         // Verify charts canvas elements exist
         Assertions.assertThat(dailyVisitsCard.findElement(By.id("daily-views-chart")))
                   .isNotNull();
-        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avgDurationChart")))
+        Assertions.assertThat(dailyVisitsCard.findElement(By.id("avg-duration-chart")))
                   .isNotNull();
 
         // Verify visits by page table structure
