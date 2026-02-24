@@ -13,7 +13,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 
 @QuarkusTest
-public class ViewTest {
+class ViewTest {
 
     @Inject
     private ViewRepository viewRepository;
@@ -29,15 +29,15 @@ public class ViewTest {
         var userId2 = UUID.randomUUID().toString();
         var tabId1 = UUID.randomUUID().toString();
         var tabId2 = UUID.randomUUID().toString();
-        var view1 = Given.view()
-                         .withPage("https://blog.vepo.dev/")
-                         .withReferer("direct")
-                         .withUserId(userId1)
-                         .withTabId(tabId1)
-                         .withStart(Instant.now()
-                                           .minusSeconds(30))
-                         .withLength(30)
-                         .persist();
+        Given.view()
+             .withPage("https://blog.vepo.dev/")
+             .withReferer("direct")
+             .withUserId(userId1)
+             .withTabId(tabId1)
+             .withStart(Instant.now()
+                               .minusSeconds(30))
+             .withLength(30)
+             .persist();
         var view2 = Given.view()
                          .withPage("https://blog.vepo.dev/")
                          .withReferer("www.google.com")
