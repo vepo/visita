@@ -32,6 +32,7 @@ public class DashboardEndpoint {
     public TemplateInstance render() {
         var dailyViews = statsRepository.buildDailyViews(Selector.NONE, null);
         return dashboard.data("dailyViews", dailyViews)
+                        .data("uniqueViews", statsRepository.findUniqueUsersByPeriod(Selector.NONE, null))
                         .data("pageViews", statsRepository.findAllPageViews(Selector.NONE, null))
                         .data("refererViews", statsRepository.findAllRefererStats(Selector.NONE, null))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.NONE,
@@ -50,6 +51,7 @@ public class DashboardEndpoint {
     public TemplateInstance renderDomain(@PathParam("domain") String domain) {
         var dailyViews = statsRepository.buildDailyViews(Selector.DOMAIN, domain);
         return dashboard.data("dailyViews", dailyViews)
+                        .data("uniqueViews", statsRepository.findUniqueUsersByPeriod(Selector.DOMAIN, domain))
                         .data("pageViews", statsRepository.findAllPageViews(Selector.DOMAIN, domain))
                         .data("refererViews", statsRepository.findAllRefererStats(Selector.DOMAIN, domain))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.DOMAIN,
@@ -68,6 +70,7 @@ public class DashboardEndpoint {
     public TemplateInstance renderReferer(@PathParam("referer") String referer) {
         var dailyViews = statsRepository.buildDailyViews(Selector.REFERRER, referer);
         return dashboard.data("dailyViews", dailyViews)
+                        .data("uniqueViews", statsRepository.findUniqueUsersByPeriod(Selector.REFERRER, referer))
                         .data("pageViews", statsRepository.findAllPageViews(Selector.REFERRER, referer))
                         .data("refererViews", statsRepository.findAllRefererStats(Selector.REFERRER, referer))
                         .data("pageViewsLastWeek", statsRepository.findPageViewsFromDate(Selector.REFERRER,

@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const dailyViews = {
         data: JSON.parse(dataScript.textContent).dailyViews.sort((o1, o2) => o1.date.localeCompare(o2.date))
     };
+    const dailyUsers = {
+        data: JSON.parse(dataScript.textContent).uniqueViews.sort((o1, o2) => o1.date.localeCompare(o2.date))
+    };
     
     // Processar dados
     const dates = [];
@@ -11,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const p70DurationValues = [];
     const p90DurationValues = [];
     const avgDurationValues = [];
+    const dailyUsersValues = [];
+    const weeklyUsersValues = [];
+    const monthlyUsersValues = [];
     
     for (let i = 0; i < dailyViews.data.length; i++) {
         const item = dailyViews.data[i];
@@ -22,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
         p70DurationValues.push(item.p70Duration_sec);
         p90DurationValues.push(item.p90Duration_sec);
         avgDurationValues.push(item.avgDuration_sec);
+    }
+
+    for(let i = 0; i< dailyUsers.data.length; ++i) {
+        const item = dailyUsers.data[i];
+        dailyUsersValues.push(item.dailyActiveUsers);
+        weeklyUsersValues.push(item.weeklyActiveUsers);
+        monthlyUsersValues.push(item.monthlyActiveUsers);
     }
     
     // Função para formatar segundos para HH:MM:SS
@@ -101,9 +114,87 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 2. Gráfico de Usuários diários
+    const ctxDailyUsers = document.getElementById('daily-users-chart');
+    if (ctxDailyUsers) {
+        const dailyUsersChart = new Chart(ctxDailyUsers, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Diário',
+                        data: dailyUsersValues,
+                        borderColor: 'rgba(59, 130, 200, 1)',
+                        backgroundColor: 'rgba(59, 130, 200, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Semanal',
+                        data: weeklyUsersValues,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: false,
+                        borderDash: [5, 5],
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Mensal',
+                        data: monthlyUsersValues,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: false,
+                        borderDash: [10, 5],
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        title: {
+                            display: true
+                        }
+                    }
+                }
+            }
+        });
+    }
     
-    // 2. Gráfico de Métricas de Tempo (linhas)
-    const ctxTempo = document.getElementById('avgDurationChart');
+    // 3. Gráfico de Métricas de Tempo (linhas)
+    const ctxTempo = document.getElementById('avg-duration-chart');
     if (ctxTempo) {
         const avgDurationChart = new Chart(ctxTempo, {
             type: 'line',
