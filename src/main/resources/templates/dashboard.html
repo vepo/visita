@@ -161,6 +161,16 @@
                     "avgDuration_sec": "{view.avgDuration.timestamp}"
                 }{#if view_hasNext},{/if}
                 {/for}
+            ],
+            "uniqueViews": [
+                {#for view in uniqueViews}
+                {
+                    "date": "{view.date}",
+                    "weeklyActiveUsers": {view.weeklyActiveUsers},
+                    "monthlyActiveUsers": {view.monthlyActiveUsers},
+                    "dailyActiveUsers": {view.dailyActiveUsers}
+                }{#if view_hasNext},{/if}
+                {/for}
             ]
         }
     </script>
