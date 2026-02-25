@@ -20,6 +20,7 @@ public class DashboardEndpoint {
     private static final String PAGE_VIEWS_LAST_WEEK = "pageViewsLastWeek";
     private static final String PAGE_VIEWS = "pageViews";
     private static final String REFERER_VIEWS = "refererViews";
+    private static final String DOMAIN_VIEWS = "domainViews";
     private static final String UNIQUE_VIEWS = "uniqueViews";
     private static final String DAILY_VIEWS = "dailyViews";
 
@@ -37,18 +38,7 @@ public class DashboardEndpoint {
     @Operation(hidden = true)
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance render() {
-        var dailyViews = statsRepository.buildDailyViews(Selector.NONE, null);
-        return dashboard.data(DAILY_VIEWS, dailyViews)
-                        .data(UNIQUE_VIEWS, statsRepository.findUniqueUsersByPeriod(Selector.NONE, null))
-                        .data(PAGE_VIEWS, statsRepository.findAllPageViews(Selector.NONE, null))
-                        .data(REFERER_VIEWS, statsRepository.findAllRefererStats(Selector.NONE, null))
-                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.findPageViewsFromDate(Selector.NONE,
-                                                                                          null,
-                                                                                          LocalDateTime.now()
-                                                                                                       .minusDays(7)))
-                        .data(TOTAL_VIEWS, dailyViews.stream()
-                                                     .mapToLong(DailyStats::views)
-                                                     .sum());
+        return load(Selector.NONE, null);
     }
 
     @GET
@@ -56,18 +46,7 @@ public class DashboardEndpoint {
     @Path("/domain/{domain}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance renderDomain(@PathParam("domain") String domain) {
-        var dailyViews = statsRepository.buildDailyViews(Selector.DOMAIN, domain);
-        return dashboard.data(DAILY_VIEWS, dailyViews)
-                        .data(UNIQUE_VIEWS, statsRepository.findUniqueUsersByPeriod(Selector.DOMAIN, domain))
-                        .data(PAGE_VIEWS, statsRepository.findAllPageViews(Selector.DOMAIN, domain))
-                        .data(REFERER_VIEWS, statsRepository.findAllRefererStats(Selector.DOMAIN, domain))
-                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.findPageViewsFromDate(Selector.DOMAIN,
-                                                                                          domain,
-                                                                                          LocalDateTime.now()
-                                                                                                       .minusDays(7)))
-                        .data(TOTAL_VIEWS, dailyViews.stream()
-                                                     .mapToLong(DailyStats::views)
-                                                     .sum());
+        return load(Selector.DOMAIN, domain);
     }
 
     @GET
@@ -75,13 +54,18 @@ public class DashboardEndpoint {
     @Path("/referer/{referer}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance renderReferer(@PathParam("referer") String referer) {
-        var dailyViews = statsRepository.buildDailyViews(Selector.REFERRER, referer);
+        return load(Selector.REFERRER, referer);
+    }
+
+    private TemplateInstance load(Selector selector, String parameter) {
+        var dailyViews = statsRepository.buildDailyViews(selector, parameter);
         return dashboard.data(DAILY_VIEWS, dailyViews)
-                        .data(UNIQUE_VIEWS, statsRepository.findUniqueUsersByPeriod(Selector.REFERRER, referer))
-                        .data(PAGE_VIEWS, statsRepository.findAllPageViews(Selector.REFERRER, referer))
-                        .data(REFERER_VIEWS, statsRepository.findAllRefererStats(Selector.REFERRER, referer))
-                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.findPageViewsFromDate(Selector.REFERRER,
-                                                                                          referer,
+                        .data(UNIQUE_VIEWS, statsRepository.findUniqueUsersByPeriod(selector, parameter))
+                        .data(DOMAIN_VIEWS, statsRepository.findAllDomainStats(selector, parameter))
+                        .data(PAGE_VIEWS, statsRepository.findAllPageViews(selector, parameter))
+                        .data(REFERER_VIEWS, statsRepository.findAllRefererStats(selector, parameter))
+                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.findPageViewsFromDate(selector,
+                                                                                          parameter,
                                                                                           LocalDateTime.now()
                                                                                                        .minusDays(7)))
                         .data(TOTAL_VIEWS, dailyViews.stream()

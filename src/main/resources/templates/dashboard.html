@@ -67,6 +67,33 @@
                 </div>
             </div>
             <div class="card">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas por Domínio</h2>
+                <div id="visitas-por-dominio" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domínio</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P70</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P90</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tempo Médio</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {#for view in domainViews}
+                            <tr>
+                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs"><a href="/dashboard/domain/{view.domain}">{view.domain}</a></td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{view.views}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p70Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.p90Duration.formatSecondsToHHMMSS}</td>
+                                <td class="px-4 py-3 text-right text-sm text-gray-900">{view.avgDuration.formatSecondsToHHMMSS}</td>
+                            </tr>
+                            {/for}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas por Origem</h2>
                 <div id="visitas-por-origem" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -122,7 +149,7 @@
             </div>
             <div class="card">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Visitas por Página</h2>
-                <div id="visitas-por-pagina" class="overflow-x-auto">
+                <div id="visitas-por-pagina-completa" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
