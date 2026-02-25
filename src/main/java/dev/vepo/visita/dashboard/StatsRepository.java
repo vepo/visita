@@ -3,12 +3,16 @@ package dev.vepo.visita.dashboard;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 
 @ApplicationScoped
 public class StatsRepository {
+    private static final Logger logger = LoggerFactory.getLogger(StatsRepository.class);
     private final EntityManager entityManager;
 
     @Inject
@@ -16,7 +20,8 @@ public class StatsRepository {
         this.entityManager = entityManager;
     }
 
-    public List<DailyStats> buildDailyViews(Selector selector, String parameter) {
+    public List<DailyStats> buildDailyViews(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
+        logger.info("Building daily stats {}={}, startDate={}, endDate={}", selector, parameter, startDate, endDate);
         return switch (selector) {
             case REFERRER -> entityManager.createQuery("""
                                                        SELECT new DailyStats(DATE(v.accessTimestamp),
@@ -27,11 +32,16 @@ public class StatsRepository {
                                                        FROM View v
                                                        WHERE v.originalView IS NOT NULL AND
                                                              v.originalView.referer = :referer AND
-                                                             v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                             v.accessTimestamp IS NOT NULL AND
+                                                             v.length IS NOT NULL AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                        GROUP BY DATE(v.accessTimestamp)
                                                        ORDER BY DATE(v.accessTimestamp) DESC
                                                        """, DailyStats.class)
                                           .setParameter("referer", parameter)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
                                           .getResultStream()
                                           .toList();
             case DOMAIN -> entityManager.createQuery("""
@@ -42,11 +52,15 @@ public class StatsRepository {
                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                      FROM View v
                                                      WHERE v.page.domain.hostname = :hostname AND
-                                                           v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL
+                                                           v.accessTimestamp IS NOT NULL AND v.length IS NOT NULL AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                      GROUP BY DATE(v.accessTimestamp)
                                                      ORDER BY DATE(v.accessTimestamp) DESC
                                                      """, DailyStats.class)
                                         .setParameter("hostname", parameter)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
                                         .getResultStream()
                                         .toList();
             case NONE -> entityManager.createQuery("""
@@ -57,17 +71,21 @@ public class StatsRepository {
                                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                    FROM View v
                                                    WHERE v.accessTimestamp IS NOT NULL AND
-                                                         v.length IS NOT NULL
+                                                         v.length IS NOT NULL AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                    GROUP BY DATE(v.accessTimestamp)
                                                    ORDER BY DATE(v.accessTimestamp) DESC
                                                    """, DailyStats.class)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
         };
     }
 
-    public List<PageStats> findAllPageViews(Selector selector, String parameter) {
+    public List<PageStats> buildPageViews(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         return switch (selector) {
             case REFERRER -> entityManager.createQuery("""
                                                        SELECT new PageStats(v.page,
@@ -78,11 +96,15 @@ public class StatsRepository {
                                                        FROM View v
                                                        WHERE v.page IS NOT NULL AND
                                                              v.originalView IS NOT NULL AND
-                                                             v.originalView.referer = :referer AND v.length IS NOT NULL
+                                                             v.originalView.referer = :referer AND v.length IS NOT NULL AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                        GROUP BY v.page
                                                        ORDER BY views DESC
                                                        """, PageStats.class)
                                           .setParameter("referer", parameter)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
                                           .getResultStream()
                                           .toList();
             case DOMAIN -> entityManager.createQuery("""
@@ -94,11 +116,15 @@ public class StatsRepository {
                                                      FROM View v
                                                      WHERE v.page IS NOT NULL AND
                                                            v.page.domain.hostname = :hostname AND
-                                                           v.length IS NOT NULL
+                                                           v.length IS NOT NULL AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                      GROUP BY v.page
                                                      ORDER BY views DESC
                                                      """, PageStats.class)
                                         .setParameter("hostname", parameter)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
                                         .getResultStream()
                                         .toList();
             case NONE -> entityManager.createQuery("""
@@ -109,17 +135,21 @@ public class StatsRepository {
                                                                         PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
                                                    WHERE v.page IS NOT NULL AND
-                                                         v.length IS NOT NULL
+                                                         v.length IS NOT NULL AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                    GROUP BY v.page
                                                    ORDER BY views DESC
                                                    """, PageStats.class)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
         };
     }
 
-    public List<PageStats> findPageViewsFromDate(Selector selector, String parameter, LocalDateTime startDate) {
+    public List<PageStats> buildPageViewsFromDate(Selector selector, String parameter, LocalDateTime startDate) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
                                                      SELECT new PageStats(v.page,
@@ -180,7 +210,7 @@ public class StatsRepository {
         };
     }
 
-    public List<RefererStats> findAllRefererStats(Selector selector, String parameter) {
+    public List<RefererStats> buildRefererStats(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
                                                      SELECT new RefererStats(v.originalView.referer,
@@ -192,12 +222,16 @@ public class StatsRepository {
                                                      WHERE v.referer IS NOT NULL AND
                                                            v.originalView.referer IS NOT NULL AND
                                                            v.page.domain.hostname = :hostname AND
-                                                           v.length IS NOT NULL
+                                                           v.length IS NOT NULL AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                      GROUP BY v.originalView.referer
                                                      ORDER BY views DESC
                                                      """,
                                                      RefererStats.class)
                                         .setParameter("hostname", parameter)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
@@ -209,12 +243,16 @@ public class StatsRepository {
                                                        FROM View v
                                                        WHERE v.referer IS NOT NULL AND
                                                              v.originalView.referer = :referer AND
-                                                             v.length IS NOT NULL
+                                                             v.length IS NOT NULL AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                        GROUP BY v.originalView.referer
                                                        ORDER BY views DESC
                                                        """,
                                                        RefererStats.class)
                                           .setParameter("referer", parameter)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
                                           .getResultStream()
                                           .toList();
             case NONE -> entityManager.createQuery("""
@@ -226,18 +264,22 @@ public class StatsRepository {
                                                    FROM View v
                                                    WHERE v.referer IS NOT NULL AND
                                                          v.originalView.referer IS NOT NULL AND
-                                                         v.length IS NOT NULL
+                                                         v.length IS NOT NULL AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                    GROUP BY v.originalView.referer
                                                    ORDER BY views DESC
                                                    """,
                                                    RefererStats.class)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
         };
     }
 
-    public List<DomainStats> findAllDomainStats(Selector selector, String parameter) {
+    public List<DomainStats> buildDomainStats(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
                                                      SELECT new DomainStats(v.page.domain.hostname,
@@ -247,12 +289,16 @@ public class StatsRepository {
                                                                               PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.page.domain.hostname = :hostname AND
-                                                           v.length IS NOT NULL
+                                                           v.length IS NOT NULL AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                      GROUP BY v.page.domain.hostname
                                                      ORDER BY views DESC
                                                      """,
                                                      DomainStats.class)
                                         .setParameter("hostname", parameter)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
@@ -263,12 +309,16 @@ public class StatsRepository {
                                                                                 PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
                                                        WHERE v.originalView.referer = :referer AND
-                                                             v.length IS NOT NULL
+                                                             v.length IS NOT NULL AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                        GROUP BY v.page.domain.hostname
                                                        ORDER BY views DESC
                                                        """,
                                                        DomainStats.class)
                                           .setParameter("referer", parameter)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
                                           .getResultStream()
                                           .toList();
             case NONE -> entityManager.createQuery("""
@@ -278,11 +328,15 @@ public class StatsRepository {
                                                        PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.length IS NOT NULL
+                                                   WHERE v.length IS NOT NULL AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
                                                    GROUP BY v.page.domain.hostname
                                                    ORDER BY views DESC
                                                    """,
                                                    DomainStats.class)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
@@ -290,107 +344,15 @@ public class StatsRepository {
     }
 
     @SuppressWarnings("unchecked")
-    public List<UniqueUsersStats> findUniqueUsersByPeriod(Selector selector, String parameter) {
-        return switch (selector) {
-            case DOMAIN -> entityManager.createNativeQuery("""
-                                                           WITH available_days AS (
-                                                               SELECT DATE(access_timestamp) as currentDay
-                                                               FROM tb_views
-                                                               WHERE access_timestamp IS NOT NULL
-                                                               GROUP BY DATE(access_timestamp)
-                                                           )
-                                                           SELECT currentDay,
-                                                                  (SELECT COUNT(DISTINCT v.user_id) FROM tb_views v
-                                                                                                    LEFT JOIN tb_pages p ON v.page_id = p.id
-                                                                                                    LEFT JOIN tb_domains d ON p.domain_id = d.id
-                                                                                                    WHERE d.hostname = :hostname AND
-                                                                                                          v.access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          v.access_timestamp >  currentDay) as dailyActiveUsers,
-                                                                  (SELECT COUNT(DISTINCT v.user_id) FROM tb_views v
-                                                                                                    LEFT JOIN tb_pages p ON v.page_id = p.id
-                                                                                                    LEFT JOIN tb_domains d ON p.domain_id = d.id
-                                                                                                    WHERE d.hostname = :hostname AND
-                                                                                                          v.access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          v.access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
-                                                                  (SELECT COUNT(DISTINCT v.user_id) FROM tb_views v
-                                                                                                    LEFT JOIN tb_pages p ON v.page_id = p.id
-                                                                                                    LEFT JOIN tb_domains d ON p.domain_id = d.id
-                                                                                                    WHERE d.hostname = :hostname AND
-                                                                                                          v.access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          v.access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
-                                                           FROM available_days
-                                                           """,
-                                                           UniqueUsersStats.class)
-                                        .setParameter("hostname", parameter)
-                                        .getResultStream()
-                                        .toList();
-            case REFERRER -> entityManager.createNativeQuery("""
-                                                             WITH available_days AS (
-                                                                 SELECT DATE(access_timestamp) as currentDay
-                                                                 FROM tb_views
-                                                                 WHERE access_timestamp IS NOT NULL
-                                                                 GROUP BY DATE(access_timestamp)
-                                                             )
-                                                             SELECT currentDay,
-                                                                    (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE id IN (SELECT tvor.view_id
-                                                                                                                 FROM tb_views_original_referer tvor
-                                                                                                                 WHERE tvor.original_referer = :referer) AND
-                                                                                                          access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          access_timestamp >  currentDay) as dailyActiveUsers,
-                                                                    (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE id IN (SELECT tvor.view_id
-                                                                                                                 FROM tb_views_original_referer tvor
-                                                                                                                 WHERE tvor.original_referer = :referer) AND
-                                                                                                          access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
-                                                                    (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE id IN (SELECT tvor.view_id
-                                                                                                                 FROM tb_views_original_referer tvor
-                                                                                                                 WHERE tvor.original_referer = :referer) AND
-                                                                                                          access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                          access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
-                                                             FROM available_days
-                                                             """,
-                                                             UniqueUsersStats.class)
-                                          .setParameter("referer", parameter)
-                                          .getResultStream()
-                                          .toList();
-            case NONE -> entityManager.createNativeQuery("""
-                                                         WITH available_days AS (
-                                                             SELECT DATE(access_timestamp) as currentDay
-                                                             FROM tb_views
-                                                             WHERE access_timestamp IS NOT NULL
-                                                             GROUP BY DATE(access_timestamp)
-                                                         )
-                                                         SELECT currentDay,
-                                                                (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                WHERE access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                      access_timestamp >  currentDay) as dailyActiveUsers,
-                                                                (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                WHERE access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                      access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
-                                                                (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                WHERE access_timestamp <= currentDay + interval '1 day' AND
-                                                                                                      access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
-                                                         FROM available_days
-                                                         """,
-                                                         UniqueUsersStats.class)
-                                      .getResultStream()
-                                      .toList();
-            default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
-        };
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<UniqueUsersStats> findUniqueUsersByPeriodFromDate(Selector selector, String parameter, LocalDateTime startDate) {
+    public List<UniqueUsersStats> buildUniqueViews(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         return switch (selector) {
             case DOMAIN -> entityManager.createNativeQuery("""
                                                            WITH available_days AS (
                                                                SELECT DATE(access_timestamp) as currentDay
                                                                FROM tb_views
                                                                WHERE access_timestamp IS NOT NULL AND
-                                                                     access_timestamp >= :start_date
+                                                                     (COALESCE(:startDate, NULL) IS NULL OR access_timestamp >= :startDate) AND
+                                                                     (COALESCE(:endDate, NULL) IS NULL OR access_timestamp < :endDate)
                                                                GROUP BY DATE(access_timestamp)
                                                            )
                                                            SELECT currentDay,
@@ -416,7 +378,8 @@ public class StatsRepository {
                                                            """,
                                                            UniqueUsersStats.class)
                                         .setParameter("hostname", parameter)
-                                        .setParameter("start_date", startDate)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createNativeQuery("""
@@ -424,7 +387,8 @@ public class StatsRepository {
                                                                  SELECT DATE(access_timestamp) as currentDay
                                                                  FROM tb_views
                                                                  WHERE access_timestamp IS NOT NULL AND
-                                                                       access_timestamp >= :start_date
+                                                                       (COALESCE(:startDate, NULL) IS NULL OR access_timestamp >= :startDate) AND
+                                                                       (COALESCE(:endDate, NULL) IS NULL OR access_timestamp < :endDate)
                                                                  GROUP BY DATE(access_timestamp)
                                                              )
                                                              SELECT currentDay,
@@ -436,13 +400,13 @@ public class StatsRepository {
                                                                                                           access_timestamp >  currentDay) as dailyActiveUsers,
                                                                     (SELECT COUNT(DISTINCT user_id) FROM tb_views
                                                                                                     WHERE id IN (SELECT tvor.view_id
-                                                                                                                 FROM tvor.tb_views_original_referer tvor
+                                                                                                                 FROM tb_views_original_referer tvor
                                                                                                                  WHERE tvor.original_referer = :referer) AND
                                                                                                           access_timestamp <= currentDay + interval '1 day' AND
                                                                                                           access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
                                                                     (SELECT COUNT(DISTINCT user_id) FROM tb_views
                                                                                                     WHERE id IN (SELECT tvor.view_id
-                                                                                                                 FROM tb_views_original_referer  tvor
+                                                                                                                 FROM tb_views_original_referer tvor
                                                                                                                  WHERE tvor.original_referer = :referer) AND
                                                                                                           access_timestamp <= currentDay + interval '1 day' AND
                                                                                                           access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
@@ -450,7 +414,8 @@ public class StatsRepository {
                                                              """,
                                                              UniqueUsersStats.class)
                                           .setParameter("referer", parameter)
-                                          .setParameter("start_date", startDate)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
                                           .getResultStream()
                                           .toList();
             case NONE -> entityManager.createNativeQuery("""
@@ -458,7 +423,8 @@ public class StatsRepository {
                                                              SELECT DATE(access_timestamp) as currentDay
                                                              FROM tb_views
                                                              WHERE access_timestamp IS NOT NULL AND
-                                                                   access_timestamp >= :start_date
+                                                                   (COALESCE(:startDate, NULL) IS NULL OR access_timestamp >= :startDate) AND
+                                                                   (COALESCE(:endDate, NULL) IS NULL OR access_timestamp < :endDate)
                                                              GROUP BY DATE(access_timestamp)
                                                          )
                                                          SELECT currentDay,
@@ -474,7 +440,8 @@ public class StatsRepository {
                                                          FROM available_days
                                                          """,
                                                          UniqueUsersStats.class)
-                                      .setParameter("start_date", startDate)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));

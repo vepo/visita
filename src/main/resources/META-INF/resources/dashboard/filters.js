@@ -48,10 +48,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     refreshLinks();
 
+    const previousFnCall = null;
+    function delayed(fn) {
+        return () => {
+            if (previousFnCall) {
+                clearTimeout(previousFnCall);
+            }
+            previousFnCall = setTimeout(() => {
+                previousFnCall = null;
+                fn();
+            }, 500);
+        };
+    }
+
     // Function to update min/max constraints
     function updateDateConstraints() {
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
+        console.log('Value changed!', startDate, endDate);
 
         // Set min attribute of endDate to startDate (if startDate has a value)
         if (startDate) {
@@ -97,51 +111,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Add event listeners for date changes
-    startDateInput.addEventListener('change', updateDateConstraints);
-    startDateInput.addEventListener('input', updateDateConstraints);
-    endDateInput.addEventListener('change', updateDateConstraints);
-    endDateInput.addEventListener('input', updateDateConstraints);
+    startDateInput.addEventListener('change', delayed(updateDateConstraints));
+    startDateInput.addEventListener('input', delayed(updateDateConstraints));
+    endDateInput.addEventListener('change', delayed(updateDateConstraints));
+    endDateInput.addEventListener('input', delayed(updateDateConstraints));
 
     // Initial constraints update
     updateDateConstraints();
 
     // Filter button click handler
-    document.getElementById('filterButton').addEventListener('click', function () {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
+    document.getElementById('filterButton')
+        .addEventListener('click', function () {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
 
-        // Additional validation before navigation
-        if (startDate && endDate && startDate > endDate) {
-            alert('Data inicial não pode ser maior que data final');
-            return;
-        }
+            console.log('Filtering', startDate, endDate);
 
-        console.log('Filtering', startDate, endDate);
+            // Get current URL and its parameters
+            const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
 
-        // Get current URL and its parameters
-        const currentUrl = new URL(window.location.href);
-        const params = new URLSearchParams(currentUrl.search);
+            // Update or remove startDate parameter
+            if (startDate) {
+                params.set('startDate', startDate);
+            } else {
+                params.delete('startDate');
+            }
 
-        // Update or remove startDate parameter
-        if (startDate) {
-            params.set('startDate', startDate);
-        } else {
-            params.delete('startDate');
-        }
+            // Update or remove endDate parameter
+            if (endDate) {
+                params.set('endDate', endDate);
+            } else {
+                params.delete('endDate');
+            }
 
-        // Update or remove endDate parameter
-        if (endDate) {
-            params.set('endDate', endDate);
-        } else {
-            params.delete('endDate');
-        }
+            // Construct new URL
+            const newUrl = currentUrl.pathname + (params.toString() ? '?' + params.toString() : '');
 
-        // Construct new URL
-        const newUrl = currentUrl.pathname + (params.toString() ? '?' + params.toString() : '');
-
-        // Navigate to new URL
-        window.location.href = newUrl;
-    });
+            // Navigate to new URL
+            window.location.href = newUrl;
+        });
 
     // Optional: Allow Enter key to trigger filter
     document.getElementById('startDate')

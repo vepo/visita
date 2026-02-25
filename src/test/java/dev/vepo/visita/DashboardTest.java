@@ -2,6 +2,8 @@ package dev.vepo.visita;
 
 import java.net.URL;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,9 @@ class DashboardTest {
 
     @TestHTTPResource("/dashboard/referer/direct")
     URL refererDashboard;
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter PT_BR_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @BeforeEach
     void setup() {
@@ -386,5 +391,266 @@ class DashboardTest {
         Assertions.assertThat(Integer.parseInt(updatedCount))
                   .as("Total visits should increase after adding new visit")
                   .isEqualTo(Integer.parseInt(initialCount) + 1);
+    }
+
+    // ================ DATE FILTERING TESTS ================
+
+    @Test
+    void dateFilterInputsShouldBePresent(WebDriver driver) {
+        driver.navigate().to(mainDashboard);
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Verify date filter elements exist
+        WebElement startDateInput = driver.findElement(By.id("startDate"));
+        WebElement endDateInput = driver.findElement(By.id("endDate"));
+        WebElement filterButton = driver.findElement(By.id("filterButton"));
+
+        Assertions.assertThat(startDateInput).isNotNull();
+        Assertions.assertThat(endDateInput).isNotNull();
+        Assertions.assertThat(filterButton).isNotNull();
+
+        Assertions.assertThat(startDateInput.getAttribute("type")).isEqualTo("date");
+        Assertions.assertThat(endDateInput.getAttribute("type")).isEqualTo("date");
+        Assertions.assertThat(filterButton.getText()).isEqualTo("Filtrar");
+    }
+
+    @Test
+    void dateFilterShouldLoadFromUrlParameters(WebDriver driver) {
+        // Create test data with specific dates
+        LocalDate today = LocalDate.now();
+        LocalDate lastWeek = today.minusDays(7);
+
+        // Navigate to dashboard with date parameters
+        String url = mainDashboard.toString() +
+                "?startDate=" + lastWeek.format(DATE_FORMATTER) +
+                "&endDate=" + today.format(DATE_FORMATTER);
+        driver.navigate().to(url);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Verify date inputs are populated from URL
+        WebElement startDateInput = driver.findElement(By.id("startDate"));
+        WebElement endDateInput = driver.findElement(By.id("endDate"));
+
+        Assertions.assertThat(startDateInput.getAttribute("value"))
+                  .isEqualTo(lastWeek.format(DATE_FORMATTER));
+        Assertions.assertThat(endDateInput.getAttribute("value"))
+                  .isEqualTo(today.format(DATE_FORMATTER));
+    }
+
+    @Test
+    void dateFilterShouldFilterDataByDateRange(WebDriver driver) {
+        // Create test data with different dates
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate twoDaysAgo = today.minusDays(2);
+        LocalDate lastWeek = today.minusDays(7);
+
+        // Create views with different dates using timestamp manipulation
+        // Note: You might need to implement a method in Given to set specific
+        // timestamps
+        Given.view().withPage("https://localhost:8080/page1.html")
+             .withLength(30)
+             .withAccessDate(lastWeek) // This method would need to be added
+             .persist();
+
+        Given.view().withPage("https://localhost:8080/page2.html")
+             .withLength(45)
+             .withAccessDate(twoDaysAgo)
+             .persist();
+
+        Given.view().withPage("https://localhost:8080/page3.html")
+             .withLength(25)
+             .withAccessDate(yesterday)
+             .persist();
+
+        Given.view().withPage("https://localhost:8080/page4.html")
+             .withLength(60)
+             .withAccessDate(today)
+             .persist();
+
+        // Navigate to dashboard with date range filter (last 3 days)
+        String url = mainDashboard.toString() +
+                "?startDate=" + twoDaysAgo.format(DATE_FORMATTER) +
+                "&endDate=" + today.format(DATE_FORMATTER);
+        driver.navigate().to(url);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Verify total visits count (should be 3 - twoDaysAgo, yesterday, today)
+        String totalVisits = driver.findElement(By.id("total-visitas")).getText();
+        Assertions.assertThat(totalVisits)
+                  .as("Total visits should be filtered to date range")
+                  .isEqualTo("3");
+
+        // Verify pages count (should be 3 pages in the date range)
+        String pagesCount = driver.findElement(By.id("paginas-monitoradas")).getText();
+        Assertions.assertThat(pagesCount)
+                  .as("Pages count should be filtered to date range")
+                  .isEqualTo("3 páginas");
+    }
+
+    @Test
+    void dateFilterShouldNavigateToNewUrlWhenApplied(WebDriver driver) {
+        driver.navigate().to(mainDashboard);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastWeek = today.minusDays(7);
+
+        // Set date inputs
+        WebElement startDateInput = driver.findElement(By.id("startDate"));
+        WebElement endDateInput = driver.findElement(By.id("endDate"));
+
+        startDateInput.sendKeys(lastWeek.format(PT_BR_DATE_FORMATTER));
+        endDateInput.sendKeys(today.format(PT_BR_DATE_FORMATTER));
+
+        // Click filter button
+        WebElement filterButton = driver.findElement(By.id("filterButton"));
+        filterButton.click();
+
+        // Wait for navigation and verify URL contains date parameters
+        wait.until(d -> d.getCurrentUrl().contains("startDate=" + lastWeek.format(DATE_FORMATTER)));
+        wait.until(d -> d.getCurrentUrl().contains("endDate=" + today.format(DATE_FORMATTER)));
+    }
+
+    @Test
+    void dateFilterShouldWorkWithDomainSpecificDashboard(WebDriver driver) {
+        // Create test data with different dates
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate lastWeek = today.minusDays(7);
+
+        // Create views for blog domain
+        Given.view().withPage("https://blog.vepo.dev/post1")
+             .withLength(30)
+             .withAccessDate(lastWeek)
+             .persist();
+
+        Given.view().withPage("https://blog.vepo.dev/post2")
+             .withLength(45)
+             .withAccessDate(yesterday)
+             .persist();
+
+        Given.view().withPage("https://blog.vepo.dev/post3")
+             .withLength(25)
+             .withAccessDate(today)
+             .persist();
+
+        // Create view for different domain (should be filtered out)
+        Given.view().withPage("https://other-domain.com/page")
+             .withLength(60)
+             .withAccessDate(today)
+             .persist();
+
+        // Navigate to domain dashboard with date filter
+        String url = blogDashboard.toString() +
+                "?startDate=" + yesterday.format(DATE_FORMATTER) +
+                "&endDate=" + today.format(DATE_FORMATTER);
+        driver.navigate().to(url);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Verify total visits count (should be 2 - yesterday and today)
+        String totalVisits = driver.findElement(By.id("total-visitas")).getText();
+        Assertions.assertThat(totalVisits)
+                  .as("Domain dashboard should respect date filter")
+                  .isEqualTo("2");
+
+        // Verify pages count
+        String pagesCount = driver.findElement(By.id("paginas-monitoradas")).getText();
+        Assertions.assertThat(pagesCount)
+                  .as("Pages count should be filtered by both domain and date")
+                  .isEqualTo("2 páginas");
+    }
+
+    @Test
+    void dateFilterShouldWorkWithRefererSpecificDashboard(WebDriver driver) {
+        // Create test data with different dates
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate lastWeek = today.minusDays(7);
+
+        // Create views for direct referer
+        Given.view().withPage("https://blog.vepo.dev/page1")
+             .withReferer("direct")
+             .withLength(30)
+             .withAccessDate(lastWeek)
+             .persist();
+
+        Given.view().withPage("https://blog.vepo.dev/page2")
+             .withReferer("direct")
+             .withLength(45)
+             .withAccessDate(yesterday)
+             .persist();
+
+        Given.view().withPage("https://cursos.vepo.dev/page3")
+             .withReferer("direct")
+             .withLength(25)
+             .withAccessDate(today)
+             .persist();
+
+        // Create view for different referer (should be filtered out)
+        Given.view().withPage("https://blog.vepo.dev/page4")
+             .withReferer("google.com")
+             .withLength(60)
+             .withAccessDate(today)
+             .persist();
+
+        // Navigate to referer dashboard with date filter
+        String url = refererDashboard.toString() +
+                "?startDate=" + yesterday.format(DATE_FORMATTER) +
+                "&endDate=" + today.format(DATE_FORMATTER);
+        driver.navigate().to(url);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Verify total visits count (should be 2 - yesterday and today)
+        String totalVisits = driver.findElement(By.id("total-visitas")).getText();
+        Assertions.assertThat(totalVisits)
+                  .as("Referer dashboard should respect date filter")
+                  .isEqualTo("2");
+
+        // Verify pages count
+        String pagesCount = driver.findElement(By.id("paginas-monitoradas")).getText();
+        Assertions.assertThat(pagesCount)
+                  .as("Pages count should be filtered by both referer and date")
+                  .isEqualTo("2 páginas");
+    }
+
+    @Test
+    void dateFilterShouldPreserveLinksWhenNavigating(WebDriver driver) {
+        // Navigate to dashboard with date parameters
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate lastWeek = today.minusDays(7);
+        Given.view().withPage("https://blog.vepo.dev/page2")
+             .withReferer("direct")
+             .withLength(45)
+             .withAccessDate(yesterday)
+             .persist();
+
+        String url = mainDashboard.toString() +
+                "?startDate=" + lastWeek.format(DATE_FORMATTER) +
+                "&endDate=" + today.format(DATE_FORMATTER);
+        driver.navigate().to(url);
+
+        Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(d -> d.getTitle().equals("Dashboard - Visita Analytics"));
+
+        // Find a domain link and verify it preserves date parameters
+        WebElement firstDomainLink = driver.findElement(By.xpath("//a[contains(@href, '/dashboard/domain/')]"));
+        String linkHref = firstDomainLink.getAttribute("href");
+
+        Assertions.assertThat(linkHref)
+                  .contains("startDate=" + lastWeek.format(DATE_FORMATTER))
+                  .contains("endDate=" + today.format(DATE_FORMATTER));
     }
 }

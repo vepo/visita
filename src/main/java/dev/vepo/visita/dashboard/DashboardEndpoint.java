@@ -2,6 +2,7 @@ package dev.vepo.visita.dashboard;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class DashboardEndpoint {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance render(@QueryParam("startDate") LocalDate startDate,
                                    @QueryParam("endDate") LocalDate endDate) {
-        return load(Selector.NONE, null, startDate, endDate);
+        return load(Selector.NONE, null, toDateTime(startDate, true), toDateTime(endDate, false));
     }
 
     @GET
@@ -54,7 +55,7 @@ public class DashboardEndpoint {
     public TemplateInstance renderDomain(@PathParam("domain") String domain,
                                          @QueryParam("startDate") LocalDate startDate,
                                          @QueryParam("endDate") LocalDate endDate) {
-        return load(Selector.DOMAIN, domain, startDate, endDate);
+        return load(Selector.DOMAIN, domain, toDateTime(startDate, true), toDateTime(endDate, false));
     }
 
     @GET
@@ -64,20 +65,32 @@ public class DashboardEndpoint {
     public TemplateInstance renderReferer(@PathParam("referer") String referer,
                                           @QueryParam("startDate") LocalDate startDate,
                                           @QueryParam("endDate") LocalDate endDate) {
-        return load(Selector.REFERRER, referer, startDate, endDate);
+        return load(Selector.REFERRER, referer, toDateTime(startDate, true), toDateTime(endDate, false));
     }
 
-    private TemplateInstance load(Selector selector, String parameter, LocalDate startDate, LocalDate endDate) {
+    private LocalDateTime toDateTime(LocalDate date, boolean upper) {
+        if (Objects.isNull(date)) {
+            return null;
+        }
+        if (upper) {
+            return date.atStartOfDay();
+        } else {
+            return date.plusDays(1).atStartOfDay();
+        }
+    }
+
+    private TemplateInstance load(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         logger.info("Loading dashboard for: {}={} startDate={}", selector, parameter, startDate);
-        var dailyViews = statsRepository.buildDailyViews(selector, parameter);
+        var dailyViews = statsRepository.buildDailyViews(selector, parameter, startDate, endDate);
         return dashboard.data(DAILY_VIEWS, dailyViews)
-                        .data(UNIQUE_VIEWS, statsRepository.findUniqueUsersByPeriod(selector, parameter))
-                        .data(DOMAIN_VIEWS, statsRepository.findAllDomainStats(selector, parameter))
-                        .data(PAGE_VIEWS, statsRepository.findAllPageViews(selector, parameter))
-                        .data(REFERER_VIEWS, statsRepository.findAllRefererStats(selector, parameter))
-                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.findPageViewsFromDate(selector, parameter,
-                                                                                          LocalDateTime.now()
-                                                                                                       .minusDays(7)))
+                        .data(UNIQUE_VIEWS, statsRepository.buildUniqueViews(selector, parameter, startDate, endDate))
+                        .data(DOMAIN_VIEWS, statsRepository.buildDomainStats(selector, parameter, startDate, endDate))
+                        .data(PAGE_VIEWS, statsRepository.buildPageViews(selector, parameter, startDate, endDate))
+                        .data(REFERER_VIEWS, statsRepository.buildRefererStats(selector, parameter, startDate, endDate))
+                        .data(PAGE_VIEWS_LAST_WEEK, statsRepository.buildPageViewsFromDate(selector,
+                                                                                           parameter,
+                                                                                           LocalDateTime.now()
+                                                                                                        .minusDays(7)))
                         .data(TOTAL_VIEWS, dailyViews.stream()
                                                      .mapToLong(DailyStats::views)
                                                      .sum());
