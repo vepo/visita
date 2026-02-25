@@ -2,7 +2,9 @@ package dev.vepo.infra;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +51,11 @@ public class ViewBuilder {
         return this;
     }
 
+    public ViewBuilder withAccessDate(LocalDate accessDate) {
+        this.start = accessDate.atTime(8, 0).toInstant(ZoneOffset.UTC);
+        return this;
+    }
+
     public ViewBuilder withUserId(String userId) {
         this.userId = userId;
         return this;
@@ -82,5 +89,4 @@ public class ViewBuilder {
     public View persist() {
         return Given.withTransaction(this::updateDatabase);
     }
-
 }

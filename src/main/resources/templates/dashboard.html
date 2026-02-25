@@ -17,12 +17,38 @@
             position: relative;
             height: 300px;
         }
+        .date-filter {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
     <div class="container mx-auto">
         <header class="mb-8">
-            <a href="/dashboard"><h1 class="text-3xl font-bold text-gray-800">Visita Analytics</h1></a>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <a href="/dashboard"><h1 class="text-3xl font-bold text-gray-800">Visita Analytics</h1></a>
+                
+                <!-- Date Range Filter -->
+                <div class="date-filter flex flex-col sm:flex-row items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <label for="startDate" class="text-sm font-medium text-gray-700 whitespace-nowrap">De:</label>
+                        <input type="date" id="startDate" name="startDate" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="endDate" class="text-sm font-medium text-gray-700 whitespace-nowrap">Até:</label>
+                        <input type="date" id="endDate" name="endDate" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <button id="filterButton" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+                        Filtrar
+                    </button>
+                </div>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -210,5 +236,6 @@
 
     <!-- Script externo para os gráficos -->
     <script src="/dashboard/charts.js"></script>
+    <script src="/dashboard/filters.js"></script>
 </body>
 </html>

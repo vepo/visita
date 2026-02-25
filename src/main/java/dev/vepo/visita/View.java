@@ -9,6 +9,7 @@ import java.util.Objects;
 import dev.vepo.visita.page.Page;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,7 +52,7 @@ public class View {
     private String timezone;
 
     @ManyToOne
-    @JoinColumn(name = "id", referencedColumnName = "view_id", insertable = false, updatable = false)
+    @JoinColumn(name = "id", referencedColumnName = "view_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "none"))
     private OriginalView originalView;
 
     public View() {}

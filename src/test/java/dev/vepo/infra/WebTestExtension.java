@@ -1,5 +1,7 @@
 package dev.vepo.infra;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.logging.LogType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,7 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
         options.addArguments("--allow-file-access-from-files");
         options.addArguments("--disable-web-security");
         options.addArguments("--allow-running-insecure-content");
+        options.setCapability("goog:loggingPrefs", Map.of("browser", "ALL"));
         driver = new ChromeDriver(options);
     }
 
@@ -40,6 +44,8 @@ public class WebTestExtension implements BeforeAllCallback, AfterTestExecutionCa
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         logger.info("Navigate to an empty page...");
+        driver.manage().logs().get(LogType.BROWSER).getAll()
+              .forEach(logEntry -> logger.info("Browser console: {}", logEntry.getMessage()));
         driver.get("about:blank");
     }
 
