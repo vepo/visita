@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +34,16 @@ class DashboardTest {
     @TestHTTPResource("/dashboard/referer/direct")
     URL refererDashboard;
 
+    private static final DateTimeFormatter loadByLocale() {
+        if (Locale.getDefault().getCountry().equals("BR")) {
+            return DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+        } else {
+            return DateTimeFormatter.ISO_LOCAL_DATE;
+        }
+    }
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
-    private static final DateTimeFormatter PT_BR_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+    private static final DateTimeFormatter FRONT_DATE_FORMATTER = loadByLocale();
 
     @BeforeEach
     void setup() {
@@ -508,8 +517,8 @@ class DashboardTest {
         WebElement startDateInput = driver.findElement(By.id("startDate"));
         WebElement endDateInput = driver.findElement(By.id("endDate"));
 
-        startDateInput.sendKeys(lastWeek.format(PT_BR_DATE_FORMATTER));
-        endDateInput.sendKeys(today.format(PT_BR_DATE_FORMATTER));
+        startDateInput.sendKeys(lastWeek.format(FRONT_DATE_FORMATTER));
+        endDateInput.sendKeys(today.format(FRONT_DATE_FORMATTER));
 
         // Click filter button
         WebElement filterButton = driver.findElement(By.id("filterButton"));
