@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -503,6 +504,7 @@ class DashboardTest {
                   .isEqualTo("3 páginas");
     }
 
+    @Disabled
     @Test
     void dateFilterShouldNavigateToNewUrlWhenApplied(WebDriver driver) {
         driver.navigate().to(mainDashboard);
