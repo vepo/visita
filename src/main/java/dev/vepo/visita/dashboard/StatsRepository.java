@@ -190,6 +190,7 @@ public class StatsRepository {
                                                                               PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
                                                      WHERE v.referer IS NOT NULL AND
+                                                           v.originalView.referer IS NOT NULL AND
                                                            v.page.domain.hostname = :hostname AND
                                                            v.length IS NOT NULL
                                                      GROUP BY v.originalView.referer
@@ -230,6 +231,58 @@ public class StatsRepository {
                                                    ORDER BY views DESC
                                                    """,
                                                    RefererStats.class)
+                                      .getResultStream()
+                                      .toList();
+            default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
+        };
+    }
+
+    public List<DomainStats> findAllDomainStats(Selector selector, String parameter) {
+        return switch (selector) {
+            case DOMAIN -> entityManager.createQuery("""
+                                                     SELECT new DomainStats(v.page.domain.hostname,
+                                                         COUNT(v.id) as views,
+                                                         AVG(v.length) as avgDuration,
+                                                         PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                              PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                     FROM View v
+                                                     WHERE v.page.domain.hostname = :hostname AND
+                                                           v.length IS NOT NULL
+                                                     GROUP BY v.page.domain.hostname
+                                                     ORDER BY views DESC
+                                                     """,
+                                                     DomainStats.class)
+                                        .setParameter("hostname", parameter)
+                                        .getResultStream()
+                                        .toList();
+            case REFERRER -> entityManager.createQuery("""
+                                                       SELECT new DomainStats(v.page.domain.hostname,
+                                                           COUNT(v.id) as views,
+                                                           AVG(v.length) as avgDuration,
+                                                           PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                                PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                       FROM View v
+                                                       WHERE v.originalView.referer = :referer AND
+                                                             v.length IS NOT NULL
+                                                       GROUP BY v.page.domain.hostname
+                                                       ORDER BY views DESC
+                                                       """,
+                                                       DomainStats.class)
+                                          .setParameter("referer", parameter)
+                                          .getResultStream()
+                                          .toList();
+            case NONE -> entityManager.createQuery("""
+                                                   SELECT new DomainStats(v.page.domain.hostname,
+                                                       COUNT(v.id) as views,
+                                                       AVG(v.length) as avgDuration,
+                                                       PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
+                                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
+                                                   FROM View v
+                                                   WHERE v.length IS NOT NULL
+                                                   GROUP BY v.page.domain.hostname
+                                                   ORDER BY views DESC
+                                                   """,
+                                                   DomainStats.class)
                                       .getResultStream()
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
