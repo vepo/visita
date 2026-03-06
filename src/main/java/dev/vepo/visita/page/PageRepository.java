@@ -24,6 +24,23 @@ public class PageRepository {
                             .findFirst();
     }
 
+    public Optional<PageInfo> getInfo(String hostname, String path) {
+        return entityManager.createQuery("""
+                                         SELECT new PageInfo(id,
+                                                            (SELECT AVG(v.length) FROM View v WHERE v.page = page AND v.length IS NOT NULL GROUP BY v.page) as avgReadingTime,
+                                                            (SELECT COUNT(*) FROM View v WHERE v.page = page GROUP BY v.page) as views
+                                                            )
+                                         FROM Page page
+                                         WHERE page.domain.hostname = :hostname AND
+                                               page.path = :path
+                                         """,
+                                         PageInfo.class)
+                            .setParameter("hostname", hostname)
+                            .setParameter("path", path)
+                            .getResultStream()
+                            .findFirst();
+    }
+
     public Page save(Page page) {
         Objects.requireNonNull(page, "'page' cannot be null!");
         this.entityManager.persist(page);

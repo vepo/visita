@@ -121,6 +121,7 @@ class VisitaAnalytics {
 
         try {
             this.loadIdentifiers();
+            this.loadVisitaStats();
             await this.setupEventListeners();
             await this.startSession();
             
@@ -149,6 +150,50 @@ class VisitaAnalytics {
             this.identifiers.tabId = VisitaAnalytics.generateTabId();
             sessionStorage.setItem('visita-tab-id', this.identifiers.tabId);
         }
+    }
+
+    async loadVisitaStats() {
+        let visitaStatsElm = document.querySelector('visita-stats');
+        console.log('Visita stats Element!', visitaStatsElm);
+        const url = this.getBaseUrl();
+        console.log('Visita url', url);
+        const config = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
+                'VISITA-DOMAIN-TOKEN': this.credentials.token
+            },
+            credentials: 'omit'
+        };
+        const response = await fetch(`${url}/domain/${encodeURIComponent(this.credentials.domain)}/page/${encodeURIComponent(window.location.pathname)}/info`, config);
+
+        if (response.ok) {
+            const info = await response.json();
+            const infoContainer = document.createElement('div');
+            infoContainer.innerHTML = `<span class="label">Tempo Médio:</span>
+                                       <span class="value">${this.timeFormat(info.avgReadingTime)}</span>
+                                       <span class="label">Visualizações:</span>
+                                       <span class="value">${info.views}</span>
+            `;
+            infoContainer.classList.add('page-info');
+            visitaStatsElm.appendChild(infoContainer);
+            console.log("INFO", info);
+        } else {
+            console.warn("Error", response.status, response.statusText);
+        }
+    }
+
+    timeFormat(valueInSeconds) {
+        const hours = Math.trunc(valueInSeconds / (60 * 60));
+        const minutes = Math.trunc((valueInSeconds - (hours * 60 * 60)) / 60);
+        const seconds = Math.trunc(valueInSeconds - (hours * 60 * 60) - (minutes * 60));
+        const pad = (n) => n.toString().padStart(2, '0');
+        if (hours > 0) {
+            return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+        }
+        return `${pad(minutes)}:${pad(seconds)}`;
     }
 
     /**
@@ -349,14 +394,18 @@ class VisitaAnalytics {
         });
     }
 
+    getBaseUrl() {
+        const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
+        return `${protocol}//${DEPLOY_DOMAIN}/api`;
+    }
+
     /**
      * Get API URL with proper protocol
      * @param {string} endpoint 
      * @returns {string}
      */
     getApiUrl(endpoint) {
-        const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-        return `${protocol}//${DEPLOY_DOMAIN}/api/tracking${endpoint}`;
+        return `${this.getBaseUrl()}/tracking${endpoint}`;
     }
 
     /**
