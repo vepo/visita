@@ -32,8 +32,8 @@ class DashboardTest {
     @TestHTTPResource("/dashboard/domain/blog.vepo.dev")
     URL blogDashboard;
 
-    @TestHTTPResource("/dashboard/referer/direct")
-    URL refererDashboard;
+    @TestHTTPResource("/dashboard/referrer/direct")
+    URL referrerDashboard;
 
     private static final DateTimeFormatter loadByLocale() {
         if (Locale.getDefault().getCountry().equals("BR")) {
@@ -249,15 +249,15 @@ class DashboardTest {
     }
 
     @Test
-    void dashboardShouldDisplayCorrectDataPerReferer(WebDriver driver) {
+    void dashboardShouldDisplayCorrectDataPerReferrer(WebDriver driver) {
         // Create some test data first
-        Given.view().withPage("https://blog.vepo.dev/").withReferer("direct").withLength(30).persist();
-        Given.view().withPage("https://blog.vepo.dev/about").withReferer("direct").withLength(45).persist();
-        Given.view().withPage("https://cursos.vepo.dev/").withReferer("direct").withLength(25).persist();
-        Given.view().withPage("https://blog.vepo.dev/").withReferer("google.com").withLength(25).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withReferrer("direct").withLength(30).persist();
+        Given.view().withPage("https://blog.vepo.dev/about").withReferrer("direct").withLength(45).persist();
+        Given.view().withPage("https://cursos.vepo.dev/").withReferrer("direct").withLength(25).persist();
+        Given.view().withPage("https://blog.vepo.dev/").withReferrer("google.com").withLength(25).persist();
 
         // Navigate to the dashboard page
-        driver.navigate().to(refererDashboard);
+        driver.navigate().to(referrerDashboard);
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         // Wait for page to load and check title
@@ -583,40 +583,40 @@ class DashboardTest {
     }
 
     @Test
-    void dateFilterShouldWorkWithRefererSpecificDashboard(WebDriver driver) {
+    void dateFilterShouldWorkWithReferrerSpecificDashboard(WebDriver driver) {
         // Create test data with different dates
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
         LocalDate lastWeek = today.minusDays(7);
 
-        // Create views for direct referer
+        // Create views for direct referrer
         Given.view().withPage("https://blog.vepo.dev/page1")
-             .withReferer("direct")
+             .withReferrer("direct")
              .withLength(30)
              .withAccessDate(lastWeek)
              .persist();
 
         Given.view().withPage("https://blog.vepo.dev/page2")
-             .withReferer("direct")
+             .withReferrer("direct")
              .withLength(45)
              .withAccessDate(yesterday)
              .persist();
 
         Given.view().withPage("https://cursos.vepo.dev/page3")
-             .withReferer("direct")
+             .withReferrer("direct")
              .withLength(25)
              .withAccessDate(today)
              .persist();
 
-        // Create view for different referer (should be filtered out)
+        // Create view for different referrer (should be filtered out)
         Given.view().withPage("https://blog.vepo.dev/page4")
-             .withReferer("google.com")
+             .withReferrer("google.com")
              .withLength(60)
              .withAccessDate(today)
              .persist();
 
-        // Navigate to referer dashboard with date filter
-        String url = refererDashboard.toString() +
+        // Navigate to referrer dashboard with date filter
+        String url = referrerDashboard.toString() +
                 "?startDate=" + yesterday.format(DATE_FORMATTER) +
                 "&endDate=" + today.format(DATE_FORMATTER);
         driver.navigate().to(url);
@@ -627,13 +627,13 @@ class DashboardTest {
         // Verify total visits count (should be 2 - yesterday and today)
         String totalVisits = driver.findElement(By.id("total-visitas")).getText();
         Assertions.assertThat(totalVisits)
-                  .as("Referer dashboard should respect date filter")
+                  .as("Referrer dashboard should respect date filter")
                   .isEqualTo("2");
 
         // Verify pages count
         String pagesCount = driver.findElement(By.id("paginas-monitoradas")).getText();
         Assertions.assertThat(pagesCount)
-                  .as("Pages count should be filtered by both referer and date")
+                  .as("Pages count should be filtered by both referrer and date")
                   .isEqualTo("2 páginas");
     }
 
@@ -644,7 +644,7 @@ class DashboardTest {
         LocalDate yesterday = today.minusDays(1);
         LocalDate lastWeek = today.minusDays(7);
         Given.view().withPage("https://blog.vepo.dev/page2")
-             .withReferer("direct")
+             .withReferrer("direct")
              .withLength(45)
              .withAccessDate(yesterday)
              .persist();

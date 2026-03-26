@@ -20,7 +20,7 @@ public class ViewBuilder {
 
     private String page;
     private Integer length;
-    private String referer;
+    private String referrer;
     private Instant start;
     private String userId;
     private String tabId;
@@ -36,8 +36,8 @@ public class ViewBuilder {
         return this;
     }
 
-    public ViewBuilder withReferer(String referer) {
-        this.referer = referer;
+    public ViewBuilder withReferrer(String referrer) {
+        this.referrer = referrer;
         return this;
     }
 
@@ -78,7 +78,7 @@ public class ViewBuilder {
         var visita = new View(page,
                               Optional.ofNullable(this.userId).orElseGet(() -> UUID.randomUUID().toString()),
                               Optional.ofNullable(this.tabId).orElseGet(() -> UUID.randomUUID().toString()),
-                              referer,
+                              referrer,
                               "test",
                               "test",
                               start.toEpochMilli() - TimeUnit.SECONDS.toMillis(length));

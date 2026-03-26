@@ -34,12 +34,12 @@ public class ViewsService {
     }
 
     @Transactional
-    public View registrarAcesso(String page, String referer, String userAgent, String timezone,
+    public View registrarAcesso(String page, String referrer, String userAgent, String timezone,
                                 String userId, String tabId, long timestamp) {
         var pageUri = URI.create(page);
         var pageEntity = pageRepository.findByHostnameAndPath(pageUri.getHost(), pageUri.getPath())
                                        .orElseGet(() -> createNewPage(pageUri));
-        return visitaRepository.save(new View(pageEntity, userId, tabId, referer, userAgent, timezone, timestamp));
+        return visitaRepository.save(new View(pageEntity, userId, tabId, referrer, userAgent, timezone, timestamp));
     }
 
     private Page createNewPage(URI pageUri) {

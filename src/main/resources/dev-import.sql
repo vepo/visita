@@ -9,7 +9,7 @@ DECLARE
     random_page_id BIGINT;
     length_seconds INTEGER;
     access_timestamp TIMESTAMP;
-    referer TEXT;
+    referrer TEXT;
     user_agent TEXT;
     user_id TEXT;
     tab_id TEXT;
@@ -22,7 +22,8 @@ BEGIN
         ('example.com', 'token-1'),
         ('blog.vepo.dev', 'token-2'),
         ('app.example.com', 'token-3'),
-        ('shop.example.com', 'token-4')
+        ('shop.example.com', 'token-4'),
+        ('localhost', 'local-dev')
     ON CONFLICT (hostname) DO NOTHING;
 
     -- Step 2: Insert sample pages with domain references
@@ -88,8 +89,8 @@ BEGIN
         access_timestamp := NOW() - (RANDOM() * INTERVAL '128 days');
         length_seconds := FLOOR(RANDOM() * 3600);
         
-        -- Referer
-        referer := CASE 
+        -- Referrer
+        referrer := CASE 
             WHEN RANDOM() < 0.05 THEN NULL  -- 5% null
             WHEN RANDOM() < 0.3 THEN 'direct'  -- 30% direct
             WHEN RANDOM() < 0.6 THEN 'https://google.com'  -- 30% google
@@ -137,7 +138,7 @@ BEGIN
             access_timestamp,
             end_timestamp,
             page_id,
-            referer,
+            referrer,
             user_agent,
             user_id,
             tab_id,
@@ -151,7 +152,7 @@ BEGIN
                 NOW()
             ),
             random_page_id,
-            referer,
+            referrer,
             user_agent,
             user_id,
             tab_id,

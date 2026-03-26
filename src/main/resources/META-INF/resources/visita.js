@@ -171,14 +171,16 @@ class VisitaAnalytics {
 
         if (response.ok) {
             const info = await response.json();
-            const infoContainer = document.createElement('div');
-            infoContainer.innerHTML = `<span class="label">Tempo Médio:</span>
-                                       <span class="value">${this.timeFormat(info.avgReadingTime)}</span>
-                                       <span class="label">Visualizações:</span>
-                                       <span class="value">${info.views}</span>
-            `;
-            infoContainer.classList.add('page-info');
-            visitaStatsElm.appendChild(infoContainer);
+            if (visitaStatsElm) {
+                const infoContainer = document.createElement('div');
+                infoContainer.innerHTML = `<span class="label">Tempo Médio:</span>
+                                        <span class="value">${this.timeFormat(info.avgReadingTime)}</span>
+                                        <span class="label">Visualizações:</span>
+                                        <span class="value">${info.views}</span>
+                `;
+                infoContainer.classList.add('page-info');
+                visitaStatsElm.appendChild(infoContainer);
+            }
             console.log("INFO", info);
         } else {
             console.warn("Error", response.status, response.statusText);
@@ -253,7 +255,7 @@ class VisitaAnalytics {
             userId: this.identifiers.userId,
             tabId: this.identifiers.tabId,
             page: window.location.href,
-            referer: document.referer || 'direct',
+            referrer: document.referrer || 'direct',
             userAgent: navigator.userAgent,
             screenResolution: `${window.screen.width}x${window.screen.height}`,
             colorDepth: window.screen.colorDepth,

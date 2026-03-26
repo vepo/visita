@@ -31,7 +31,7 @@ class ViewTest {
         var tabId2 = UUID.randomUUID().toString();
         Given.view()
              .withPage("https://blog.vepo.dev/")
-             .withReferer("direct")
+             .withReferrer("direct")
              .withUserId(userId1)
              .withTabId(tabId1)
              .withStart(Instant.now()
@@ -40,7 +40,7 @@ class ViewTest {
              .persist();
         var view2 = Given.view()
                          .withPage("https://blog.vepo.dev/")
-                         .withReferer("www.google.com")
+                         .withReferrer("www.google.com")
                          .withUserId(userId2)
                          .withTabId(tabId2)
                          .withStart(Instant.now()
@@ -49,7 +49,7 @@ class ViewTest {
                          .persist();
         var view3 = Given.view()
                          .withPage("https://blog.vepo.dev/")
-                         .withReferer("https://blog.vepo.dev/")
+                         .withReferrer("https://blog.vepo.dev/")
                          .withUserId(userId1)
                          .withTabId(tabId1)
                          .withStart(Instant.now())
@@ -58,12 +58,12 @@ class ViewTest {
         assertThat(viewRepository.findById(view3.getId())).isNotNull()
                                                           .extracting(View::getOriginalView)
                                                           .isNotNull()
-                                                          .extracting(OriginalView::getReferer)
+                                                          .extracting(OriginalView::getReferrer)
                                                           .isEqualTo("direct");
         assertThat(viewRepository.findById(view2.getId())).isNotNull()
                                                           .extracting(View::getOriginalView)
                                                           .isNotNull()
-                                                          .extracting(OriginalView::getReferer)
+                                                          .extracting(OriginalView::getReferrer)
                                                           .isEqualTo("www.google.com");
     }
 }

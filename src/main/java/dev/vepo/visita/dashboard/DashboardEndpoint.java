@@ -25,7 +25,7 @@ public class DashboardEndpoint {
     private static final String TOTAL_VIEWS = "totalViews";
     private static final String PAGE_VIEWS_LAST_WEEK = "pageViewsLastWeek";
     private static final String PAGE_VIEWS = "pageViews";
-    private static final String REFERER_VIEWS = "refererViews";
+    private static final String REFERER_VIEWS = "referrerViews";
     private static final String DOMAIN_VIEWS = "domainViews";
     private static final String UNIQUE_VIEWS = "uniqueViews";
     private static final String DAILY_VIEWS = "dailyViews";
@@ -60,12 +60,12 @@ public class DashboardEndpoint {
 
     @GET
     @Operation(hidden = true)
-    @Path("/referer/{referer}")
+    @Path("/referrer/{referrer}")
     @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance renderReferer(@PathParam("referer") String referer,
-                                          @QueryParam("startDate") LocalDate startDate,
-                                          @QueryParam("endDate") LocalDate endDate) {
-        return load(Selector.REFERRER, referer, toDateTime(startDate, true), toDateTime(endDate, false));
+    public TemplateInstance renderReferrer(@PathParam("referrer") String referrer,
+                                           @QueryParam("startDate") LocalDate startDate,
+                                           @QueryParam("endDate") LocalDate endDate) {
+        return load(Selector.REFERRER, referrer, toDateTime(startDate, true), toDateTime(endDate, false));
     }
 
     private LocalDateTime toDateTime(LocalDate date, boolean upper) {
@@ -86,7 +86,7 @@ public class DashboardEndpoint {
                         .data(UNIQUE_VIEWS, statsRepository.buildUniqueViews(selector, parameter, startDate, endDate))
                         .data(DOMAIN_VIEWS, statsRepository.buildDomainStats(selector, parameter, startDate, endDate))
                         .data(PAGE_VIEWS, statsRepository.buildPageViews(selector, parameter, startDate, endDate))
-                        .data(REFERER_VIEWS, statsRepository.buildRefererStats(selector, parameter, startDate, endDate))
+                        .data(REFERER_VIEWS, statsRepository.buildReferrerStats(selector, parameter, startDate, endDate))
                         .data(PAGE_VIEWS_LAST_WEEK, statsRepository.buildPageViewsFromDate(selector,
                                                                                            parameter,
                                                                                            LocalDateTime.now()
