@@ -18,7 +18,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/api/tracking")
-@TokenRequired
 @PermitAll
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,6 +32,7 @@ public class TrackingEndpoint {
     }
 
     @POST
+    @TokenRequired
     @Path("/access")
     public TrackingResponse access(@Valid TrackingStartRequest request) {
         logger.info("Starting new tracking session - request={}", request);
@@ -57,6 +57,7 @@ public class TrackingEndpoint {
     }
 
     @POST
+    @TokenRequired
     @Path("/view")
     public TrackingResponse view(@Valid TrackingUpdateRequest request) {
         logger.info("Updating view registration - sessionId={}, request={}", request);
@@ -73,6 +74,7 @@ public class TrackingEndpoint {
     }
 
     @POST
+    @TokenRequired
     @Path("/ping")
     public Response ping(@Valid TrackingPingRequest request) {
         logger.debug("Processing keep-alive ping - request={}", request);
