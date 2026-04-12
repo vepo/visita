@@ -9,7 +9,7 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <selenium.version>4.39.0</selenium.version>
+        <selenium.version>4.43.0</selenium.version>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
