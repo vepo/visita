@@ -3,7 +3,7 @@
  * @version 2.0.0
  * @description Advanced user session tracking with cross-tab support
  */
-
+window.DEPLOY_DOMAIN = '@DEPLOY_DOMAIN@'; // Maven will replace this
 class VisitaAnalytics {
     constructor() {
         this.API_ENDPOINTS = {
@@ -398,7 +398,7 @@ class VisitaAnalytics {
 
     getBaseUrl() {
         const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-        return `${protocol}//${DEPLOY_DOMAIN}/api`;
+        return `${protocol}//${window.DEPLOY_DOMAIN}/api`;
     }
 
     /**
