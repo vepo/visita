@@ -5,6 +5,7 @@ COPY --chown=185 target/quarkus-app/*.jar /deployments/
 COPY --chown=185 target/quarkus-app/app/ /deployments/app/
 COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
+USER root
 RUN mkdir -p /usr/local/newrelic
 ADD target/newrelic/newrelic.jar /usr/local/newrelic/newrelic.jar
 ADD target/newrelic/newrelic.yml /usr/local/newrelic/newrelic.yml
