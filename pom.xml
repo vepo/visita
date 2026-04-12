@@ -89,6 +89,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.micrometer.registry</groupId>
+            <artifactId>quarkus-micrometer-registry-newrelic</artifactId>
+            <version>3.5.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>io.quarkus</groupId>
