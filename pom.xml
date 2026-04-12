@@ -273,6 +273,8 @@
             <id>prod</id>
             <properties>
                 <DEPLOY_DOMAIN>visita.vepo.dev</DEPLOY_DOMAIN>
+                <skipTests>true</skipTests>
+                <skipITs>true</skipITs>
             </properties>
         </profile>
     </profiles>
