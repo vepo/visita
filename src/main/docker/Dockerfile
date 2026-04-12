@@ -8,7 +8,7 @@ COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 USER root
 RUN mkdir -p /usr/local/newrelic && \
     curl -o /usr/local/newrelic/newrelic.jar https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip
-ADD target/newrelic/newrelic.yml /usr/local/newrelic/newrelic.yml
+ADD newrelic/newrelic.yml /usr/local/newrelic/newrelic.yml
 
 EXPOSE 8080
 USER 185
