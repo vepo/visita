@@ -264,14 +264,5 @@
                 <DEPLOY_DOMAIN>visita.vepo.dev</DEPLOY_DOMAIN>
             </properties>
         </profile>
-        <profile>
-            <id>native</id>
-            <properties>
-                <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
-                <skipTests>true</skipTests>
-                <skipITs>true</skipITs>
-                <quarkus.native.enabled>true</quarkus.native.enabled>
-            </properties>
-        </profile>
     </profiles>
 </project>
