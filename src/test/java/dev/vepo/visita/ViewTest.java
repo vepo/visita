@@ -56,14 +56,12 @@ class ViewTest {
                          .withLength(30)
                          .persist();
         assertThat(viewRepository.findById(view3.getId())).isNotNull()
-                                                          .extracting(View::getOriginalView)
+                                                          .extracting(View::getOriginalReferrer)
                                                           .isNotNull()
-                                                          .extracting(OriginalView::getReferrer)
                                                           .isEqualTo("direct");
         assertThat(viewRepository.findById(view2.getId())).isNotNull()
-                                                          .extracting(View::getOriginalView)
+                                                          .extracting(View::getOriginalReferrer)
                                                           .isNotNull()
-                                                          .extracting(OriginalView::getReferrer)
                                                           .isEqualTo("www.google.com");
     }
 }
