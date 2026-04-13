@@ -9,7 +9,6 @@ import java.util.Objects;
 import dev.vepo.visita.page.Page;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,9 +50,8 @@ public class View {
 
     private String timezone;
 
-    @ManyToOne
-    @JoinColumn(name = "id", referencedColumnName = "view_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "none"))
-    private OriginalView originalView;
+    @Column(name = "original_referrer")
+    private String originalReferrer;
 
     public View() {}
 
@@ -172,8 +170,12 @@ public class View {
                                                                               .toLocalDateTime());
     }
 
-    public OriginalView getOriginalView() {
-        return originalView;
+    public String getOriginalReferrer() {
+        return originalReferrer;
+    }
+
+    public void setOriginalReferrer(String originalReferrer) {
+        this.originalReferrer = originalReferrer;
     }
 
     @Override
