@@ -48,20 +48,37 @@ CREATE INDEX idx_views_original_referrer ON tb_views(original_referrer);
 -- 5. Create trigger for future inserts (same as before, but now using fast lookups)
 CREATE OR REPLACE FUNCTION set_original_referrer()
 RETURNS TRIGGER AS $$
+DECLARE
+    domain_hostname TEXT;
+    is_self_referral BOOLEAN;
+    prev_external_referrer TEXT;
 BEGIN
-    SELECT referrer INTO NEW.original_referrer
-    FROM tb_views
-    WHERE user_id = NEW.user_id
-      AND access_timestamp < NEW.access_timestamp
-      AND (
-          page_id IS NULL 
-          OR referrer NOT LIKE '%' || (
-              SELECT hostname FROM tb_domains 
-              WHERE id = (SELECT domain_id FROM tb_pages WHERE id = NEW.page_id)
-          ) || '%'
-      )
-    ORDER BY access_timestamp DESC
-    LIMIT 1;
+    -- Get hostname of current page's domain
+    SELECT d.hostname INTO domain_hostname
+    FROM tb_pages p
+    JOIN tb_domains d ON p.domain_id = d.id
+    WHERE p.id = NEW.page_id;
+    
+    -- Check if referrer is self-referral (contains domain hostname)
+    is_self_referral := (NEW.referrer IS NOT NULL AND domain_hostname IS NOT NULL AND NEW.referrer LIKE '%' || domain_hostname || '%');
+    
+    IF is_self_referral THEN
+        -- Find previous external referrer (from views where referrer does not contain their own page's domain)
+        SELECT v.referrer INTO prev_external_referrer
+        FROM tb_views v
+        LEFT JOIN tb_pages p ON v.page_id = p.id
+        LEFT JOIN tb_domains d ON p.domain_id = d.id
+        WHERE v.user_id = NEW.user_id
+          AND v.access_timestamp < NEW.access_timestamp
+          AND (v.referrer IS NULL OR d.hostname IS NULL OR v.referrer NOT LIKE '%' || d.hostname || '%')
+        ORDER BY v.access_timestamp DESC
+        LIMIT 1;
+        NEW.original_referrer := prev_external_referrer;
+    ELSE
+        -- External referrer (or NULL) -> use current referrer
+        NEW.original_referrer := NEW.referrer;
+    END IF;
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

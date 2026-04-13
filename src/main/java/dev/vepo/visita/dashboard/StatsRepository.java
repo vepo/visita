@@ -30,7 +30,7 @@ public class StatsRepository {
                                                                              PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length),
                                                                              PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length))
                                                        FROM View v
-                                                       WHERE v.originalReferrer = :referrer AND
+                                                       WHERE (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
                                                              v.accessTimestamp IS NOT NULL AND
                                                              v.length IS NOT NULL AND
                                                              (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
@@ -94,7 +94,7 @@ public class StatsRepository {
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
                                                        WHERE v.page IS NOT NULL AND
-                                                             v.originalReferrer = :referrer AND
+                                                             (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
                                                              v.length IS NOT NULL AND
                                                              (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
                                                              (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
@@ -177,7 +177,7 @@ public class StatsRepository {
                                                                             PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
                                                        WHERE v.page IS NOT NULL AND
-                                                             v.originalReferrer = :referrer AND
+                                                             (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
                                                              v.length IS NOT NULL AND
                                                              v.accessTimestamp >= :start_date
                                                        GROUP BY v.page
@@ -211,18 +211,18 @@ public class StatsRepository {
     public List<ReferrerStats> buildReferrerStats(Selector selector, String parameter, LocalDateTime startDate, LocalDateTime endDate) {
         return switch (selector) {
             case DOMAIN -> entityManager.createQuery("""
-                                                     SELECT new ReferrerStats(v.originalReferrer,
+                                                     SELECT new ReferrerStats(COALESCE(v.originalReferrer, v.referrer),
                                                          COUNT(v.id) as views,
                                                          AVG(v.length) as avgDuration,
                                                          PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                          PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                      FROM View v
-                                                     WHERE v.originalReferrer IS NOT NULL AND
+                                                     WHERE (v.originalReferrer IS NOT NULL OR v.referrer IS NOT NULL) AND
                                                            v.page.domain.hostname = :hostname AND
                                                            v.length IS NOT NULL AND
                                                            (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
                                                            (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
-                                                     GROUP BY v.originalReferrer
+                                                     GROUP BY COALESCE(v.originalReferrer, v.referrer)
                                                      ORDER BY views DESC
                                                      """,
                                                      ReferrerStats.class)
@@ -232,17 +232,17 @@ public class StatsRepository {
                                         .getResultStream()
                                         .toList();
             case REFERRER -> entityManager.createQuery("""
-                                                       SELECT new ReferrerStats(v.originalReferrer,
+                                                       SELECT new ReferrerStats(COALESCE(v.originalReferrer, v.referrer),
                                                            COUNT(v.id) as views,
                                                            AVG(v.length) as avgDuration,
                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.originalReferrer = :referrer AND
+                                                       WHERE (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
                                                              v.length IS NOT NULL AND
                                                              (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
                                                              (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
-                                                       GROUP BY v.originalReferrer
+                                                       GROUP BY COALESCE(v.originalReferrer, v.referrer)
                                                        ORDER BY views DESC
                                                        """,
                                                        ReferrerStats.class)
@@ -252,17 +252,17 @@ public class StatsRepository {
                                           .getResultStream()
                                           .toList();
             case NONE -> entityManager.createQuery("""
-                                                   SELECT new ReferrerStats(v.originalReferrer,
+                                                   SELECT new ReferrerStats(COALESCE(v.originalReferrer, v.referrer),
                                                        COUNT(v.id) as views,
                                                        AVG(v.length) as avgDuration,
                                                        PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                        PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                    FROM View v
-                                                   WHERE v.originalReferrer IS NOT NULL AND
+                                                   WHERE (v.originalReferrer IS NOT NULL OR v.referrer IS NOT NULL) AND
                                                          v.length IS NOT NULL AND
                                                          (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
                                                          (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
-                                                   GROUP BY v.originalReferrer
+                                                   GROUP BY COALESCE(v.originalReferrer, v.referrer)
                                                    ORDER BY views DESC
                                                    """,
                                                    ReferrerStats.class)
@@ -303,7 +303,7 @@ public class StatsRepository {
                                                            PERCENTILE_DISC(0.7) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc50,
                                                            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY v.length) as avgDurationPerc90)
                                                        FROM View v
-                                                       WHERE v.originalReferrer = :referrer AND
+                                                       WHERE (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
                                                              v.length IS NOT NULL AND
                                                              (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
                                                              (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
@@ -388,15 +388,15 @@ public class StatsRepository {
                                                              )
                                                              SELECT currentDay,
                                                                     (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE original_referrer = :referrer AND
+                                                                                                    WHERE (referrer = :referrer OR original_referrer = :referrer) AND
                                                                                                           access_timestamp <= currentDay + interval '1 day' AND
                                                                                                           access_timestamp >  currentDay) as dailyActiveUsers,
                                                                     (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE original_referrer = :referrer AND
+                                                                                                    WHERE (referrer = :referrer OR original_referrer = :referrer) AND
                                                                                                           access_timestamp <= currentDay + interval '1 day' AND
                                                                                                           access_timestamp >  currentDay - interval '1 week') as weeklyActiveUsers,
                                                                     (SELECT COUNT(DISTINCT user_id) FROM tb_views
-                                                                                                    WHERE original_referrer = :referrer AND
+                                                                                                    WHERE (referrer = :referrer OR original_referrer = :referrer) AND
                                                                                                           access_timestamp <= currentDay + interval '1 day' AND
                                                                                                           access_timestamp >  currentDay - interval '1 month') as monthlyActiveUsers
                                                              FROM available_days
