@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import dev.vepo.visita.domain.DomainRepository;
 import dev.vepo.visita.page.Page;
 import dev.vepo.visita.page.PageRepository;
+import dev.vepo.visita.tracking.IgnoredPathException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -37,6 +38,7 @@ public class ViewsService {
     public View registrarAcesso(String page, String referrer, String userAgent, String timezone,
                                 String userId, String tabId, long timestamp) {
         var pageUri = URI.create(page);
+        rejectIgnoredPath(pageUri);
         var pageEntity = pageRepository.findByHostnameAndPath(pageUri.getHost(), pageUri.getPath())
                                        .orElseGet(() -> createNewPage(pageUri));
         return visitaRepository.save(new View(pageEntity, userId, tabId, referrer, userAgent, timezone, timestamp));
@@ -50,6 +52,14 @@ public class ViewsService {
         var page = new Page(domain, pageUri.getPath());
         logger.debug("Persisting new page! page={}", pageUri);
         return pageRepository.save(page);
+    }
+
+    private void rejectIgnoredPath(URI pageUri) {
+        domainRepository.findByHostname(pageUri.getHost())
+                        .filter(domain -> domain.ignoresPath(pageUri.getPath()))
+                        .ifPresent(domain -> {
+                            throw new IgnoredPathException();
+                        });
     }
 
     @Transactional
@@ -66,24 +76,23 @@ public class ViewsService {
 
     @Transactional
     public View registerView(long id, String page, long timestamp) {
+        var pageUri = URI.create(page);
+        rejectIgnoredPath(pageUri);
         var visita = visitaRepository.findById(id);
         logger.info("View found! view={}", visita);
         if (Objects.nonNull(visita)) {
-            var urlPath = URI.create(page).getPath();
+            var urlPath = pageUri.getPath();
             if (visita.isSamePage(urlPath)) {
                 visita.extendDuration(timestamp);
                 visitaRepository.save(visita);
                 return visita;
             } else {
-                // finish last view
                 visita.setEndTimestamp(Instant.ofEpochMilli(timestamp)
                                               .atZone(ZoneId.systemDefault())
                                               .toLocalDateTime());
                 visitaRepository.save(visita);
-                var pageUri = URI.create(page);
-                var pageEntity = pageRepository.findByHostnameAndPath(pageUri.getHost(), pageUri.getPath())
+                var pageEntity = pageRepository.findByHostnameAndPath(pageUri.getHost(), urlPath)
                                                .orElseGet(() -> createNewPage(pageUri));
-                // start a new view
                 return visitaRepository.save(new View(pageEntity, timestamp, visita));
             }
         } else {

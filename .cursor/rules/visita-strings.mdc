@@ -1,0 +1,28 @@
+---
+description: Avoid string concatenation — prefer formatted(), then StringBuilder
+globs: src/main/java/**/*.java
+alwaysApply: false
+---
+
+# String building
+
+Do **not** join strings with the `+` operator (exceptions, URLs, log messages, SQL fragments).
+
+## 1. Prefer `.formatted()`
+
+```java
+// ❌
+throw new NotFoundException("View not found with id=" + id);
+
+// ✅
+throw new NotFoundException("View not found with id=%s".formatted(id));
+```
+
+## 2. Otherwise `StringBuilder`
+
+For loops or many conditional segments.
+
+## Never
+
+- `+` to build user-facing text, paths, or SQL/JPQL fragments.
+- Interpolate user input into query strings — bind via parameters ([visita-jpa.mdc](visita-jpa.mdc)).

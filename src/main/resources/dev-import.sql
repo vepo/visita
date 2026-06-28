@@ -77,7 +77,60 @@ BEGIN
     INNER JOIN domain_ids d ON pages.domain_id = d.id
     ON CONFLICT (domain_id, path) DO NOTHING;
 
-    -- Step 3: Generate 1000 view records with random page assignments
+    UPDATE tb_domains
+    SET ignored_path_patterns = E'/favicon\\.ico\n/health'
+    WHERE hostname = 'localhost';
+
+    -- Step 3: Generate session chains for meaningful referrer attribution
+    FOR i IN 1..40 LOOP
+        user_id := 'session_user_' || LPAD(i::TEXT, 3, '0');
+        tab_id := 'session_tab_' || LPAD(i::TEXT, 3, '0');
+        referrer := CASE
+            WHEN i % 4 = 0 THEN 'direct'
+            WHEN i % 4 = 1 THEN 'https://google.com'
+            WHEN i % 4 = 2 THEN 'https://facebook.com'
+            ELSE 'https://linkedin.com'
+        END;
+
+        FOR j IN 1..(2 + (i % 3)) LOOP
+            SELECT p.id INTO random_page_id
+            FROM tb_pages p
+            JOIN tb_domains d ON p.domain_id = d.id
+            WHERE d.hostname = 'blog.vepo.dev'
+            ORDER BY RANDOM()
+            LIMIT 1;
+
+            access_timestamp := NOW() - (RANDOM() * INTERVAL '128 days') + ((j - 1) || ' minutes')::INTERVAL;
+            length_seconds := 30 + FLOOR(RANDOM() * 120);
+
+            INSERT INTO tb_views (
+                "length",
+                access_timestamp,
+                end_timestamp,
+                page_id,
+                referrer,
+                user_agent,
+                user_id,
+                tab_id,
+                timezone
+            ) VALUES (
+                length_seconds,
+                access_timestamp,
+                LEAST(access_timestamp + (length_seconds || ' seconds')::INTERVAL, NOW()),
+                random_page_id,
+                CASE
+                    WHEN j = 1 THEN referrer
+                    ELSE 'https://blog.vepo.dev/'
+                END,
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                user_id,
+                tab_id,
+                'America/Sao_Paulo'
+            );
+        END LOOP;
+    END LOOP;
+
+    -- Step 4: Generate additional random view records
     FOR i IN 1..1000 LOOP
         -- Get a random page ID
         SELECT id INTO random_page_id 

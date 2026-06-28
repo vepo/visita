@@ -1,0 +1,39 @@
+---
+description: Law of Demeter — no train wrecks; talk to direct collaborators only
+globs: src/**/*.java
+alwaysApply: false
+---
+
+# Law of Demeter
+
+**Train wreck:** chained getters for business logic (`view.getPage().getDomain().getHostname()`).
+
+## Violations vs fixes
+
+```java
+// ❌ Train wreck in service logic
+var host = view.getPage().getDomain().getHostname();
+
+// ✅ Entity or repository exposes what callers need
+var path = view.getPage().getPath(); // one hop — acceptable for display
+// or add view.getPagePath() / query via repository with JOIN FETCH
+```
+
+## Where it applies
+
+| Layer | Rule |
+|-------|------|
+| **Endpoint / Service** | No train wrecks for business rules or authorization. |
+| **Entity** | Add helpers when multiple callers need the same hop. |
+| **Repository** | JPQL/Criteria paths and `JOIN FETCH` are fine. |
+
+## Allowed
+
+- **Templates / dashboard:** display fields from loaded view models.
+- **One direct component:** `view.getPage()` when `Page` is the next collaborator.
+- **Framework types:** `requestContext.getUriInfo().getPath()`.
+
+## Pragmatic guidance
+
+- **Do not** mandate a big-bang refactor of existing chains.
+- **Do** stop adding new chains; extract a helper when touching legacy code.

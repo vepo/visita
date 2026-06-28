@@ -1,5 +1,6 @@
 package dev.vepo.visita.domain;
 
+import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -24,6 +25,9 @@ public class Domain {
 
     private boolean disabled;
 
+    @Column(name = "ignored_path_patterns")
+    private String ignoredPathPatterns;
+
     public Domain() {
         this.disabled = false;
     }
@@ -32,6 +36,11 @@ public class Domain {
         this.hostname = Objects.requireNonNull(hostname, "'hostname' cannot be null!");
         this.token = Objects.requireNonNull(token, "'token' cannot be null!");
         this.disabled = false;
+    }
+
+    public Domain(String hostname, String token, List<String> ignoredPathPatterns) {
+        this(hostname, token);
+        applyIgnoredPathPatterns(ignoredPathPatterns);
     }
 
     public Long getId() {
@@ -64,6 +73,27 @@ public class Domain {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    public String getIgnoredPathPatterns() {
+        return ignoredPathPatterns;
+    }
+
+    public void setIgnoredPathPatterns(String ignoredPathPatterns) {
+        this.ignoredPathPatterns = ignoredPathPatterns;
+    }
+
+    public List<String> parsedIgnoredPathPatterns() {
+        return IgnoredPathPatterns.parse(ignoredPathPatterns);
+    }
+
+    public void applyIgnoredPathPatterns(List<String> patterns) {
+        IgnoredPathPatterns.validate(patterns);
+        this.ignoredPathPatterns = IgnoredPathPatterns.serialize(patterns);
+    }
+
+    public boolean ignoresPath(String path) {
+        return IgnoredPathPatterns.matches(path, ignoredPathPatterns);
     }
 
     @Override

@@ -1,0 +1,44 @@
+---
+description: Core Visita conventions (tracking API, Qute dashboard, packages)
+alwaysApply: true
+---
+
+# Visita — core rules
+
+Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) and existing code in the same package.
+
+## Stack
+
+- Quarkus + Qute + REST/JSON. PostgreSQL + Flyway (`db/migration/`).
+- **Client tracker:** `src/main/resources/META-INF/resources/visita.js` — see [visita-javascript.mdc](visita-javascript.mdc).
+- **Dashboard:** Qute template `templates/dashboard.html` + static JS under `META-INF/resources/dashboard/`.
+- Repo tooling: no Python; prefer bash or JBang if scripts are added — [visita-tooling-languages.mdc](visita-tooling-languages.mdc).
+
+## Endpoints
+
+- `@ApplicationScoped` + `@Path`. Constructor injection for repositories/services.
+- JSON admin APIs: `@RolesAllowed(RequiredRoles.ADMIN)` + JWT.
+- Tracking: `@TokenRequired` + `TrackingTokenFilter` for token-gated routes; `@PermitAll` on the resource class.
+- Prefer `Response` when status codes matter; records for request/response bodies.
+
+## Data access
+
+- Repositories: `EntityManager` directly; `Optional` for single results; `@Transactional` on mutating methods.
+- Query style: [visita-jpa.mdc](visita-jpa.mdc).
+- Tracking workflow: `ViewsService` orchestrates `ViewRepository`, `PageRepository`, `DomainRepository`.
+- Analytics: `StatsRepository` for dashboard aggregations.
+
+## Tracking headers
+
+- `VISITA-DOMAIN-TOKEN` and `VISITA-DOMAIN-HOSTNAME` — validated in `TrackingTokenFilter`.
+- Do not bypass the filter for token-required tracking endpoints.
+
+## Never
+
+- `System.out.println` — use SLF4J.
+- Raw SQL in endpoints or services — keep queries in repositories.
+- Commit domain tokens or JWT secrets to the repo (dev keys in `application.properties` are test-only).
+
+## When adding a feature
+
+ARCHITECTURE.md §12 — migration → entity → repository → service (if needed) → endpoint → `visita.js` (if client) → tests → dev seed → **update ARCHITECTURE.md**.

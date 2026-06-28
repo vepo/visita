@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.vepo.infra.Given;
+import dev.vepo.visita.domain.DomainRepository;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.Response.Status;
@@ -365,5 +366,53 @@ class TrackingEndpointTest {
                .post("/api/tracking/access")
                .then()
                .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void access_ignoredPathReturnsNoContentTest() {
+        Given.withTransaction(() -> {
+            var repository = Given.inject(DomainRepository.class);
+            var domain = repository.findByHostname(VALID_HOSTNAME).orElseThrow();
+            domain.applyIgnoredPathPatterns(java.util.List.of("/admin/.*"));
+            repository.save(domain);
+        });
+
+        var request = new TrackingStartRequest("en",
+                                               "http://blog.vepo.dev/admin/users",
+                                               "www.google.com",
+                                               "1920x1080",
+                                               "tab-1",
+                                               System.currentTimeMillis(),
+                                               "America/Sao_Paulo",
+                                               "Mozilla/5.0 Test",
+                                               "user-1");
+
+        given().header(TrackingTokenFilter.TOKEN_HEADER, VALID_TOKEN)
+               .header(TrackingTokenFilter.HOSTNAME_HEADER, VALID_HOSTNAME)
+               .contentType(ContentType.JSON)
+               .body(request)
+               .when()
+               .post("/api/tracking/access")
+               .then()
+               .statusCode(Status.NO_CONTENT.getStatusCode());
+    }
+
+    @Test
+    void config_returnsIgnoredPathPatternsTest() {
+        Given.withTransaction(() -> {
+            var repository = Given.inject(DomainRepository.class);
+            var domain = repository.findByHostname(VALID_HOSTNAME).orElseThrow();
+            domain.applyIgnoredPathPatterns(java.util.List.of("/health", "/admin/.*"));
+            repository.save(domain);
+        });
+
+        given().header(TrackingTokenFilter.TOKEN_HEADER, VALID_TOKEN)
+               .header(TrackingTokenFilter.HOSTNAME_HEADER, VALID_HOSTNAME)
+               .accept(ContentType.JSON)
+               .when()
+               .get("/api/tracking/config")
+               .then()
+               .statusCode(Status.OK.getStatusCode())
+               .body("ignoredPathPatterns", org.hamcrest.Matchers.hasItems("/health", "/admin/.*"));
     }
 }

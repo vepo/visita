@@ -1,0 +1,65 @@
+---
+description: Layered architecture — Endpoint, Service, Repository responsibilities
+alwaysApply: true
+---
+
+# Layered architecture
+
+Follow [ARCHITECTURE.md](../../ARCHITECTURE.md) §7 and §9. Dependencies flow **downward only**:
+
+```
+*Endpoint  →  *Service (when needed)  →  *Repository  →  database
+```
+
+## *Endpoint — HTTP boundary
+
+- `@ApplicationScoped` + `@Path`; parse input, auth (`@RolesAllowed`, `@TokenRequired`), status codes, JSON or Qute rendering.
+- **May** inject `*Repository` for trivial CRUD with no business rules (domain admin endpoints).
+- **Must** inject `*Service` when logic spans entities or coordinates writes (`TrackingEndpoint` → `ViewsService`).
+- Delegate via intent methods — [visita-tell-dont-ask.mdc](visita-tell-dont-ask.mdc).
+
+## *Service — business logic
+
+- `@ApplicationScoped`; name `XxxService` (e.g. `ViewsService`).
+- Orchestrate repositories, apply domain rules; expose intent methods.
+- **Inject** `*Repository` (and other services); **never** `EntityManager` or raw SQL.
+- **Never** depend on `*Endpoint`, JAX-RS types, or Qute templates.
+
+## *Repository — persistence
+
+- One per entity (or analytics concern); `@ApplicationScoped`; name `XxxRepository`.
+- `EntityManager` **only** here; `Optional` for single results; `@Transactional` on mutating methods.
+- Queries and persistence only — **no** business rules or HTTP concerns.
+- **Never** inject `*Service` or `*Endpoint`.
+
+## Related types (not layers)
+
+| Kind | Role |
+|------|------|
+| `*Filter` | Cross-cutting HTTP (e.g. `TrackingTokenFilter`) |
+| `*Request` / `*Response` | API DTO records |
+
+## When adding a feature
+
+1. Entity (if new table).
+2. `XxxRepository`.
+3. `XxxService` when logic is non-trivial.
+4. `XxxEndpoint`.
+
+## Violations — refactor toward layers
+
+```java
+// ❌ Endpoint with persistence logic
+@POST
+public View access(TrackingStartRequest req) {
+    var page = entityManager.find(Page.class, ...);
+    entityManager.persist(new View(...));
+}
+
+// ✅ Endpoint delegates
+@POST
+public TrackingResponse access(TrackingStartRequest req) {
+    var view = viewsService.registrarAcesso(...);
+    return new TrackingResponse(view.getId());
+}
+```

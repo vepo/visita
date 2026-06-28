@@ -1,0 +1,34 @@
+---
+description: Tell, Don't Ask — encapsulate domain decisions in intent methods
+globs: src/**/*.java
+alwaysApply: false
+---
+
+# Tell, Don't Ask
+
+Naming must follow [domain-model.mdc](domain-model.mdc) ubiquitous language. See also [visita-law-of-demeter.mdc](visita-law-of-demeter.mdc).
+
+**Tell:** call an intent method (`extendDuration`, `registrarAcesso`, `disable`) that owns the decision.
+
+**Don't ask:** avoid `if (view.getEndTimestamp() == null) { view.setLength(...); }` spread across callers.
+
+## Layers
+
+```
+*Endpoint  →  tell  →  *Service  →  tell  →  Entity / *Repository
+```
+
+- **Endpoint:** parse input, authorize, then delegate — no business branching on entity getters.
+- **Service:** orchestrate workflows; expose intent methods (`registerView`, `registrarSaida`).
+- **Entity:** domain verbs when adding invariants (`isSamePage`, `extendDuration`).
+
+## Pragmatic guidance
+
+- **Do not** mandate a big-bang refactor of anemic entities.
+- **Do** apply Tell, Don't Ask on **new or touched** behavior.
+- When touching legacy ask-then-set code, consolidate into the nearest `*Service` or entity method.
+
+## Never
+
+- Add business rules in endpoints that belong in `ViewsService` or entities.
+- Copy the same state-check + mutation block into a second caller.

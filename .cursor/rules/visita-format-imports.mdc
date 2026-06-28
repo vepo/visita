@@ -1,0 +1,37 @@
+---
+description: Java formatting (formatter.xml) and import hygiene — required on every Java edit
+globs: "**/*.java"
+alwaysApply: true
+---
+
+# Java formatting and imports
+
+All Java code must match the project Eclipse formatter. CI enforces this via the formatter Maven plugin — [`resources/formatter.xml`](../../resources/formatter.xml).
+
+## Formatting
+
+- **Always** format edited `*.java` files with `resources/formatter.xml` (4 spaces, K&R braces, ~120 char lines).
+- After editing Java, run:
+
+```bash
+./mvnw -B process-sources
+```
+
+- Do not hand-style braces, indentation, or line breaks that diverge from the formatter.
+- Import order: `java.*` / `jakarta.*` → `io.quarkus.*` → third-party → `dev.vepo.visita.*` / `dev.vepo.infra.*`.
+
+## Imports — required
+
+1. **Every type** used in code must have an `import` (or live in the same package).
+2. **Remove unused imports** after every edit.
+3. **Never** use a fully qualified class name when a simple name would work **without** a collision.
+
+## Imports — name collision (only exception)
+
+Import one type; use FQN for the other when simple names collide.
+
+## Before finishing Java changes
+
+1. `./mvnw -B process-sources` (or confirm `mvn test` passes).
+2. `ReadLints` on edited paths.
+3. Full gate: [static-analysis.mdc](static-analysis.mdc) (`./mvnw -B clean test`).

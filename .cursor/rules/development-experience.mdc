@@ -1,0 +1,51 @@
+---
+description: Dev seed data (dev-import.sql) so dashboard and tracking are explorable locally
+alwaysApply: true
+---
+
+# Development experience — dev seed data
+
+Local dev must let a human exercise tracking and the dashboard without manual DB work. That dataset lives in [`src/main/resources/dev-import.sql`](../../src/main/resources/dev-import.sql).
+
+## How it loads
+
+- **Profile:** `%dev` only — [`DatabaseDevSetup`](../../src/main/java/dev/vepo/visita/infra/DatabaseDevSetup.java) runs the script on every startup.
+- **Fresh DB:** `%dev.quarkus.flyway.clean-at-start=true` resets schema, then `dev-import.sql` repopulates domains, pages, and ~1000 views.
+- **Run:** `./mvnw quarkus:dev` → [http://localhost:8081](http://localhost:8081) (dev port).
+
+## When adding or changing a feature
+
+Treat `dev-import.sql` as part of the same change as endpoint + migration (see [ARCHITECTURE.md](../../ARCHITECTURE.md) §12). Before marking work done, confirm you can **see and exercise** the feature in dev.
+
+| If the feature involves… | Seed should include… |
+|--------------------------|----------------------|
+| New table / aggregate | Sample rows reachable from dashboard or tracking |
+| New domain field | At least one domain row exercising it |
+| Dashboard metric / filter | Enough `tb_views` volume and variety (referrers, domains, date range) |
+| Local tracker testing | `localhost` domain with known token `local-dev` |
+
+## Script structure
+
+1. **Domains** — `tb_domains` with stable hostnames/tokens.
+2. **Pages** — paths per domain (`ON CONFLICT DO NOTHING`).
+3. **Views** — generated loop with realistic referrers, user agents, date spread.
+
+Add numbered section comments when introducing a new block.
+
+## Conventions
+
+- **Stable tokens** — `local-dev` for `localhost`; document new tokens in [ARCHITECTURE.md](../../ARCHITECTURE.md) §13.
+- **Use subqueries** for FK wiring, not hard-coded numeric IDs.
+- **Respect FK order** on inserts.
+- **Do not** rely on `dev-import.sql` in tests — use `Given` builders ([visita-tests.mdc](visita-tests.mdc)).
+
+## Checklist before finishing
+
+- [ ] Restarted `./mvnw quarkus:dev` and script ran without SQL errors
+- [ ] Dashboard shows meaningful data for the new/changed metric
+- [ ] Tracking against `localhost` works with seeded token when relevant
+
+## Never
+
+- Ship a user-facing feature with only empty dashboard states in dev.
+- Put production credentials in `dev-import.sql`.

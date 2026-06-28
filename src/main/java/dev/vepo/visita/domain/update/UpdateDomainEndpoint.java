@@ -35,6 +35,7 @@ public class UpdateDomainEndpoint {
         var domain = this.domainRepository.findById(domainId)
                                           .orElseThrow(() -> new NotFoundException("Domain not found! domainId=%d".formatted(domainId)));
         domain.setHostname(request.hostname());
+        domain.applyIgnoredPathPatterns(request.ignoredPathPatterns());
         return DomainResponse.from(this.domainRepository.save(domain));
     }
 }

@@ -10,7 +10,8 @@ class VisitaAnalytics {
             ACCESS: '/access',
             EXIT: '/exit',
             PAGE_VIEW: '/view',
-            PING: '/ping'
+            PING: '/ping',
+            CONFIG: '/config'
         };
         
         this.config = {
@@ -24,9 +25,12 @@ class VisitaAnalytics {
         this.state = {
             isInitialized: false,
             isUnloading: false,
+            trackingDisabled: false,
             lastActivity: Date.now(),
             retryCount: 0
         };
+
+        this.ignoredPathPatterns = [];
         
         this.identifiers = {
             userId: null,
@@ -121,10 +125,19 @@ class VisitaAnalytics {
 
         try {
             this.loadIdentifiers();
+            if (this.credentials.token) {
+                await this.loadTrackingConfig();
+            }
+            if (this.isPathIgnored()) {
+                this.state.trackingDisabled = true;
+                this.state.isInitialized = true;
+                console.info('Visita: tracking disabled for ignored path');
+                return;
+            }
             this.loadVisitaStats();
-            await this.setupEventListeners();
+            this.setupEventListeners();
             await this.startSession();
-            
+
             this.state.isInitialized = true;
             this.logSystemStatus();
         } catch (error) {
@@ -150,6 +163,33 @@ class VisitaAnalytics {
             this.identifiers.tabId = VisitaAnalytics.generateTabId();
             sessionStorage.setItem('visita-tab-id', this.identifiers.tabId);
         }
+    }
+
+    async loadTrackingConfig() {
+        try {
+            const response = await fetch(this.getApiUrl(this.API_ENDPOINTS.CONFIG), {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
+                    'VISITA-DOMAIN-TOKEN': this.credentials.token
+                },
+                credentials: 'omit'
+            });
+
+            if (response.ok) {
+                const config = await response.json();
+                this.ignoredPathPatterns = (config.ignoredPathPatterns || [])
+                    .map((pattern) => new RegExp(pattern));
+            }
+        } catch (error) {
+            console.warn('Failed to load tracking config:', error);
+            this.ignoredPathPatterns = [];
+        }
+    }
+
+    isPathIgnored(pathname = window.location.pathname) {
+        return this.ignoredPathPatterns.some((pattern) => pattern.test(pathname));
     }
 
     async loadVisitaStats() {
@@ -202,6 +242,10 @@ class VisitaAnalytics {
      * Start new or resume existing session
      */
     async startSession() {
+        if (this.state.trackingDisabled || this.isPathIgnored()) {
+            return;
+        }
+
         const storedSession = this.loadStoredSession();
         
         if (storedSession && this.isSessionValid(storedSession)) {
@@ -271,6 +315,12 @@ class VisitaAnalytics {
                 { method: 'POST', retry: true }
             );
 
+            if (response?.ignored) {
+                this.state.trackingDisabled = true;
+                console.info('Visita: server skipped tracking for ignored path');
+                return;
+            }
+
             if (response?.id) {
                 this.identifiers.visitaId = response.id;
                 this.storeSessionData(response.id);
@@ -278,7 +328,9 @@ class VisitaAnalytics {
             }
         } catch (error) {
             console.error('Failed to create session:', error);
-            this.createFallbackSession();
+            if (!this.state.trackingDisabled) {
+                this.createFallbackSession();
+            }
         }
     }
 
@@ -347,13 +399,20 @@ class VisitaAnalytics {
                 }
 
                 const response = await fetch(url, config);
-                
+
+                if (response.status === 204) {
+                    return { ignored: true };
+                }
+
                 if (response.ok) {
                     if (options.no_body) {
                         return response;
-                    } else {
-                        return await response.json();
                     }
+                    const body = await response.text();
+                    if (!body) {
+                        return { ignored: true };
+                    }
+                    return JSON.parse(body);
                 }
                 
                 console.warn("Error", response.status, response.statusText);
@@ -449,7 +508,7 @@ class VisitaAnalytics {
     }
 
     async sendPing() {
-        if (!this.identifiers.visitaId) return;
+        if (this.state.trackingDisabled || !this.identifiers.visitaId) return;
         const pingData = { 
             id: this.identifiers.visitaId,
             timestamp: Date.now()
@@ -468,7 +527,7 @@ class VisitaAnalytics {
      * @param {string} url 
      */
     async trackPageView(url) {
-        if (!this.identifiers.visitaId) return;
+        if (this.state.trackingDisabled || !this.identifiers.visitaId) return;
 
         const viewData = {
             id: this.identifiers.visitaId,
@@ -480,6 +539,12 @@ class VisitaAnalytics {
 
         try {
             const response = await this.sendRequest(this.API_ENDPOINTS.PAGE_VIEW, viewData);
+
+            if (response?.ignored) {
+                this.state.trackingDisabled = true;
+                this.clearSessionData();
+                return;
+            }
 
             if (response?.id && response?.id != this.identifiers.visitaId) {
                 this.identifiers.visitaId = response.id;
@@ -517,7 +582,12 @@ class VisitaAnalytics {
             this.registerExit();
         } else if (document.visibilityState === 'visible') {
             this.state.lastActivity = Date.now();
-            this.startSession(); // Resume or create new session
+            if (this.isPathIgnored()) {
+                this.state.trackingDisabled = true;
+                return;
+            }
+            this.state.trackingDisabled = false;
+            this.startSession();
         }
     }
 
@@ -541,6 +611,10 @@ class VisitaAnalytics {
      * Check for user inactivity
      */
     checkInactivity() {
+        if (this.state.trackingDisabled) {
+            return;
+        }
+
         const inactiveTime = Date.now() - this.state.lastActivity;
         
         if (inactiveTime > this.config.INACTIVITY_THRESHOLD && this.identifiers.visitaId) {
@@ -562,7 +636,7 @@ class VisitaAnalytics {
             if (currentUrl !== lastUrl) {
                 console.info(`Page navigation: ${lastUrl} -> ${currentUrl}`);
                 lastUrl = currentUrl;
-                this.trackPageView(currentUrl);
+                this.handleNavigation(currentUrl);
             }
         });
 
@@ -572,6 +646,28 @@ class VisitaAnalytics {
             attributes: true,
             attributeFilter: ['href']
         });
+    }
+
+    handleNavigation(currentUrl) {
+        const pathname = new URL(currentUrl, window.location.origin).pathname;
+
+        if (this.isPathIgnored(pathname)) {
+            if (this.identifiers.visitaId) {
+                this.registerExit();
+            } else {
+                this.clearSessionData();
+            }
+            this.state.trackingDisabled = true;
+            return;
+        }
+
+        if (this.state.trackingDisabled) {
+            this.state.trackingDisabled = false;
+            this.startSession();
+            return;
+        }
+
+        this.trackPageView(currentUrl);
     }
 
     /**

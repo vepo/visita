@@ -69,6 +69,8 @@ public class View {
 
     public View(Page page, long timestamp, View extended) {
         this.page = page;
+        this.userId = extended.userId;
+        this.tabId = extended.tabId;
         this.referrer = extended.referrer;
         this.userAgent = extended.userAgent;
         this.timezone = extended.timezone;

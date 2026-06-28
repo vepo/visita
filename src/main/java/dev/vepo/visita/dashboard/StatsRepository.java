@@ -6,6 +6,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.vepo.visita.stats.summary.DomainViewCount;
+import dev.vepo.visita.stats.summary.PageViewCount;
+import dev.vepo.visita.stats.summary.StatsSummary;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -435,5 +438,29 @@ public class StatsRepository {
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
         };
+    }
+
+    public StatsSummary buildStatsSummary(Selector selector,
+                                          String parameter,
+                                          LocalDateTime startDate,
+                                          LocalDateTime endDate,
+                                          int topDomainsLimit,
+                                          int topPagesLimit) {
+        var dailyViews = buildDailyViews(selector, parameter, startDate, endDate);
+        var pageViews = buildPageViews(selector, parameter, startDate, endDate);
+        var topDomains = buildDomainStats(selector, parameter, startDate, endDate)
+                                                                                  .stream()
+                                                                                  .limit(topDomainsLimit)
+                                                                                  .map(stats -> new DomainViewCount(stats.domain(), stats.views()))
+                                                                                  .toList();
+        var topPagesLastWeek = buildPageViewsFromDate(selector, parameter, LocalDateTime.now().minusDays(7))
+                                                                                                            .stream()
+                                                                                                            .limit(topPagesLimit)
+                                                                                                            .map(stats -> new PageViewCount(stats.page(),
+                                                                                                                                            stats.views()))
+                                                                                                            .toList();
+        var totalViews = dailyViews.stream().mapToLong(DailyStats::views).sum();
+
+        return new StatsSummary(totalViews, dailyViews.size(), pageViews.size(), topDomains, topPagesLastWeek);
     }
 }

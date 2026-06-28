@@ -1,0 +1,35 @@
+---
+description: WebTest, QuarkusTest, and Given builder conventions
+globs: src/test/java/**/*.java
+alwaysApply: false
+---
+
+# Test conventions
+
+## Annotations
+
+- `@WebTest` — browser tests (Selenium via `WebTestExtension`); inject `WebDriver` or `ViewSession`.
+- `@QuarkusTest` — HTTP/DB integration with RestAssured or injected beans.
+- Chrome runs **headless always** in `WebTestExtension` (no env var gate).
+
+## Given builders
+
+- `Given.domain()`, `Given.view()` — persist test data.
+- `Given.cleanDatabase()` in `@BeforeEach` when tests mutate shared data.
+- `Given.withTransaction(...)` for builder persistence.
+- `Given.admin()` / `Given.nonAdmin()` — JWT `Authorization` headers for admin API tests.
+
+## URLs in tests
+
+- Use relative paths matching production routes.
+- Static HTML fixtures: `src/test/resources/` served by `StaticServer` in browser tests.
+
+## Time
+
+- Prefer **fixed** instants in assertions when order matters; dev-import uses `NOW()` — integration tests that depend on counts should seed via `Given`, not assume dev-import state.
+- `Given.cleanDatabase()` before tests that need an empty or controlled dataset.
+
+## Never
+
+- Bypass `Given` builders with raw `EntityManager` in test classes unless extending the builder infrastructure.
+- Rely on `dev-import.sql` row counts in unit/integration tests — use explicit `Given` data.

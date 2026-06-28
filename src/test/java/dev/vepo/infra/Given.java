@@ -86,6 +86,10 @@ public abstract class Given {
         return new User(1, "admin", "admin@passport.vepo.dev", Set.of(RequiredRoles.ADMIN));
     }
 
+    public static User statsViewer() {
+        return new User(3, "stats-viewer", "stats@passport.vepo.dev", Set.of(RequiredRoles.STATS_VIEWER));
+    }
+
     public static User nonAdmin() {
         return new User(2, "user", "user@passport.vepo.dev", Set.of());
     }

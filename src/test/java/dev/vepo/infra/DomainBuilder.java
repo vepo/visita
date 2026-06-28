@@ -7,6 +7,7 @@ public class DomainBuilder {
 
     private String hostname;
     private String token;
+    private java.util.List<String> ignoredPathPatterns;
 
     public DomainBuilder() {
         this.hostname = null;
@@ -23,9 +24,14 @@ public class DomainBuilder {
         return this;
     }
 
+    public DomainBuilder withIgnoredPathPatterns(java.util.List<String> ignoredPathPatterns) {
+        this.ignoredPathPatterns = ignoredPathPatterns;
+        return this;
+    }
+
     private void updateDatabase() {
         var repo = Given.inject(DomainRepository.class);
-        repo.save(new Domain(hostname, token));
+        repo.save(new Domain(hostname, token, ignoredPathPatterns));
     }
 
     public void persist() {

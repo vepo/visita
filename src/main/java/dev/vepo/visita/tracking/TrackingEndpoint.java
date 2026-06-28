@@ -34,15 +34,19 @@ public class TrackingEndpoint {
     @POST
     @TokenRequired
     @Path("/access")
-    public TrackingResponse access(@Valid TrackingStartRequest request) {
+    public Response access(@Valid TrackingStartRequest request) {
         logger.info("Starting new tracking session - request={}", request);
 
-        var view = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
-                                                 request.timezone(), request.userId(), request.tabId(),
-                                                 request.timestamp());
-
-        logger.info("Tracking session created successfully - view={}", view);
-        return new TrackingResponse(view.getId());
+        try {
+            var view = visitaService.registrarAcesso(request.page(), request.referrer(), request.userAgent(),
+                                                     request.timezone(), request.userId(), request.tabId(),
+                                                     request.timestamp());
+            logger.info("Tracking session created successfully - view={}", view);
+            return Response.ok(new TrackingResponse(view.getId())).build();
+        } catch (IgnoredPathException exception) {
+            logger.debug("Tracking skipped for ignored path - page={}", request.page());
+            return Response.noContent().build();
+        }
     }
 
     @POST
@@ -59,17 +63,22 @@ public class TrackingEndpoint {
     @POST
     @TokenRequired
     @Path("/view")
-    public TrackingResponse view(@Valid TrackingUpdateRequest request) {
+    public Response view(@Valid TrackingUpdateRequest request) {
         logger.info("Updating view registration - sessionId={}, request={}", request);
 
-        var view = visitaService.registerView(request.id(), request.page(), request.timestamp());
+        try {
+            var view = visitaService.registerView(request.id(), request.page(), request.timestamp());
 
-        if (Objects.nonNull(view)) {
-            logger.info("View registration updated successfully - view={}", view);
-            return new TrackingResponse(view.getId());
-        } else {
-            logger.warn("Failed to update view - session not found: request={}", request);
-            throw new NotFoundException("View not found with id=%s".formatted(request.id()));
+            if (Objects.nonNull(view)) {
+                logger.info("View registration updated successfully - view={}", view);
+                return Response.ok(new TrackingResponse(view.getId())).build();
+            } else {
+                logger.warn("Failed to update view - session not found: request={}", request);
+                throw new NotFoundException("View not found with id=%s".formatted(request.id()));
+            }
+        } catch (IgnoredPathException exception) {
+            logger.debug("View update skipped for ignored path - page={}", request.page());
+            return Response.noContent().build();
         }
     }
 

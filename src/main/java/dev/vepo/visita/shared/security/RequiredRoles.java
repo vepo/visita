@@ -1,5 +1,6 @@
 package dev.vepo.visita.shared.security;
 
 public interface RequiredRoles {
-    public static final String ADMIN = "domains.admin";
+    String ADMIN = "domains.admin";
+    String STATS_VIEWER = "Domain.Stats.Viewer";
 }

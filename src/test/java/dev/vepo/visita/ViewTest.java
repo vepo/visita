@@ -64,4 +64,80 @@ class ViewTest {
                                                           .isNotNull()
                                                           .isEqualTo("www.google.com");
     }
+
+    @Test
+    void shouldKeepOriginalReferrerIndependentPerTab() {
+        var userId = UUID.randomUUID().toString();
+        var tabA = UUID.randomUUID().toString();
+        var tabB = UUID.randomUUID().toString();
+
+        Given.view()
+             .withPage("https://blog.vepo.dev/")
+             .withReferrer("direct")
+             .withUserId(userId)
+             .withTabId(tabA)
+             .withStart(Instant.now().minusSeconds(20))
+             .withLength(10)
+             .persist();
+        Given.view()
+             .withPage("https://blog.vepo.dev/")
+             .withReferrer("https://google.com")
+             .withUserId(userId)
+             .withTabId(tabB)
+             .withStart(Instant.now().minusSeconds(15))
+             .withLength(10)
+             .persist();
+
+        var selfReferralTabA = Given.view()
+                                    .withPage("https://blog.vepo.dev/about")
+                                    .withReferrer("https://blog.vepo.dev/")
+                                    .withUserId(userId)
+                                    .withTabId(tabA)
+                                    .withStart(Instant.now().minusSeconds(5))
+                                    .withLength(10)
+                                    .persist();
+        var selfReferralTabB = Given.view()
+                                    .withPage("https://blog.vepo.dev/about")
+                                    .withReferrer("https://blog.vepo.dev/")
+                                    .withUserId(userId)
+                                    .withTabId(tabB)
+                                    .withStart(Instant.now())
+                                    .withLength(10)
+                                    .persist();
+
+        assertThat(viewRepository.findById(selfReferralTabA.getId()))
+                                                                     .extracting(View::getOriginalReferrer)
+                                                                     .isEqualTo("direct");
+        assertThat(viewRepository.findById(selfReferralTabB.getId()))
+                                                                     .extracting(View::getOriginalReferrer)
+                                                                     .isEqualTo("https://google.com");
+    }
+
+    @Test
+    void shouldNotInheritReferrerFromAnotherDomain() {
+        var userId = UUID.randomUUID().toString();
+        var tabId = UUID.randomUUID().toString();
+
+        Given.view()
+             .withPage("https://cursos.vepo.dev/")
+             .withReferrer("https://google.com")
+             .withUserId(userId)
+             .withTabId(tabId)
+             .withStart(Instant.now().minusSeconds(10))
+             .withLength(10)
+             .persist();
+
+        var blogSelfReferral = Given.view()
+                                    .withPage("https://blog.vepo.dev/")
+                                    .withReferrer("https://blog.vepo.dev/")
+                                    .withUserId(userId)
+                                    .withTabId(tabId)
+                                    .withStart(Instant.now())
+                                    .withLength(10)
+                                    .persist();
+
+        assertThat(viewRepository.findById(blogSelfReferral.getId()))
+                                                                     .extracting(View::getOriginalReferrer)
+                                                                     .isNull();
+    }
 }
