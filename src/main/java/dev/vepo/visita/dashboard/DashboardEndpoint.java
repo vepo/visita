@@ -29,6 +29,7 @@ public class DashboardEndpoint {
     private static final String DOMAIN_VIEWS = "domainViews";
     private static final String UNIQUE_VIEWS = "uniqueViews";
     private static final String DAILY_VIEWS = "dailyViews";
+    private static final String REFERRER_PAGE_FLOWS = "referrerPageFlows";
 
     private final Template dashboard;
 
@@ -87,6 +88,8 @@ public class DashboardEndpoint {
                         .data(DOMAIN_VIEWS, statsRepository.buildDomainStats(selector, parameter, startDate, endDate))
                         .data(PAGE_VIEWS, statsRepository.buildPageViews(selector, parameter, startDate, endDate))
                         .data(REFERER_VIEWS, statsRepository.buildReferrerStats(selector, parameter, startDate, endDate))
+                        .data(REFERRER_PAGE_FLOWS,
+                              statsRepository.buildReferrerPageFlows(selector, parameter, startDate, endDate))
                         .data(PAGE_VIEWS_LAST_WEEK, statsRepository.buildPageViewsFromDate(selector,
                                                                                            parameter,
                                                                                            LocalDateTime.now()

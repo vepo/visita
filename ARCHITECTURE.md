@@ -29,7 +29,7 @@ Canonical reference for developers and AI agents working on Visita. The public-f
 ### Dashboard (HTML)
 
 1. `GET /dashboard` (optional `startDate`, `endDate`, `/domain/{domain}`, `/referrer/{referrer}`).
-2. `DashboardEndpoint` queries `StatsRepository` and renders Qute template with chart data.
+2. `DashboardEndpoint` queries `StatsRepository` and renders Qute template with chart data (Chart.js daily charts, D3 Sankey referrer→page flows).
 
 ### Stats summary (JSON)
 
