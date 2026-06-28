@@ -15,6 +15,26 @@ DECLARE
     tab_id TEXT;
     screen_resolution TEXT;
     timezone TEXT;
+    blog_home_id BIGINT;
+    blog_getting_started_id BIGINT;
+    blog_some_post_id BIGINT;
+    blog_advanced_id BIGINT;
+    blog_docker_id BIGINT;
+    blog_about_id BIGINT;
+    blog_contact_id BIGINT;
+    shop_products_id BIGINT;
+    shop_laptop_id BIGINT;
+    shop_phone_id BIGINT;
+    shop_cart_id BIGINT;
+    shop_checkout_id BIGINT;
+    app_home_id BIGINT;
+    app_dashboard_id BIGINT;
+    app_analytics_id BIGINT;
+    app_settings_id BIGINT;
+    sankey_user_id TEXT;
+    sankey_tab_id TEXT;
+    sankey_base_ts TIMESTAMP;
+    chain_step INTEGER;
 BEGIN
     -- Step 1: Insert sample domains
     INSERT INTO tb_domains (hostname, token)
@@ -49,6 +69,8 @@ BEGIN
             ('/post/advanced-topics', (SELECT id FROM domain_ids WHERE hostname = 'blog.vepo.dev')),
             ('/post/docker-guide', (SELECT id FROM domain_ids WHERE hostname = 'blog.vepo.dev')),
             ('/post/kubernetes-tips', (SELECT id FROM domain_ids WHERE hostname = 'blog.vepo.dev')),
+            ('/about', (SELECT id FROM domain_ids WHERE hostname = 'blog.vepo.dev')),
+            ('/contact', (SELECT id FROM domain_ids WHERE hostname = 'blog.vepo.dev')),
             
             -- App pages
             ('/dashboard', (SELECT id FROM domain_ids WHERE hostname = 'app.example.com')),
@@ -81,54 +103,195 @@ BEGIN
     SET ignored_path_patterns = E'/favicon\\.ico\n/health'
     WHERE hostname = 'localhost';
 
-    -- Step 3: Generate session chains for meaningful referrer attribution
-    FOR i IN 1..40 LOOP
-        user_id := 'session_user_' || LPAD(i::TEXT, 3, '0');
-        tab_id := 'session_tab_' || LPAD(i::TEXT, 3, '0');
-        referrer := CASE
-            WHEN i % 4 = 0 THEN 'direct'
-            WHEN i % 4 = 1 THEN 'https://google.com'
-            WHEN i % 4 = 2 THEN 'https://facebook.com'
-            ELSE 'https://linkedin.com'
-        END;
+    -- Step 3: Deterministic Sankey funnels (origin flow + page drill-down)
+    -- Referrers use full URLs on in-site navigation, matching document.referrer in visita.js.
+    SELECT p.id INTO blog_home_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/';
 
-        FOR j IN 1..(2 + (i % 3)) LOOP
-            SELECT p.id INTO random_page_id
-            FROM tb_pages p
-            JOIN tb_domains d ON p.domain_id = d.id
-            WHERE d.hostname = 'blog.vepo.dev'
-            ORDER BY RANDOM()
-            LIMIT 1;
+        SELECT p.id INTO blog_getting_started_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/post/getting-started';
 
-            access_timestamp := NOW() - (RANDOM() * INTERVAL '128 days') + ((j - 1) || ' minutes')::INTERVAL;
-            length_seconds := 30 + FLOOR(RANDOM() * 120);
+        SELECT p.id INTO blog_some_post_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/post/some-post';
 
-            INSERT INTO tb_views (
-                "length",
-                access_timestamp,
-                end_timestamp,
-                page_id,
-                referrer,
-                user_agent,
-                user_id,
-                tab_id,
-                timezone
-            ) VALUES (
-                length_seconds,
-                access_timestamp,
-                LEAST(access_timestamp + (length_seconds || ' seconds')::INTERVAL, NOW()),
-                random_page_id,
-                CASE
-                    WHEN j = 1 THEN referrer
-                    ELSE 'https://blog.vepo.dev/'
-                END,
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                user_id,
-                tab_id,
-                'America/Sao_Paulo'
-            );
+        SELECT p.id INTO blog_advanced_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/post/advanced-topics';
+
+        SELECT p.id INTO blog_docker_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/post/docker-guide';
+
+        SELECT p.id INTO blog_about_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/about';
+
+        SELECT p.id INTO blog_contact_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'blog.vepo.dev' AND p.path = '/contact';
+
+        SELECT p.id INTO shop_products_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'shop.example.com' AND p.path = '/products';
+
+        SELECT p.id INTO shop_laptop_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'shop.example.com' AND p.path = '/product/laptop';
+
+        SELECT p.id INTO shop_phone_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'shop.example.com' AND p.path = '/product/phone';
+
+        SELECT p.id INTO shop_cart_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'shop.example.com' AND p.path = '/cart';
+
+        SELECT p.id INTO shop_checkout_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'shop.example.com' AND p.path = '/checkout';
+
+        SELECT p.id INTO app_home_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'app.example.com' AND p.path = '/';
+
+        SELECT p.id INTO app_dashboard_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'app.example.com' AND p.path = '/dashboard';
+
+        SELECT p.id INTO app_analytics_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'app.example.com' AND p.path = '/analytics';
+
+        SELECT p.id INTO app_settings_id
+        FROM tb_pages p JOIN tb_domains d ON p.domain_id = d.id
+        WHERE d.hostname = 'app.example.com' AND p.path = '/settings';
+
+        -- 3a. blog.vepo.dev: Google -> / -> posts/about (click "/" then drill into next pages)
+        FOR i IN 1..35 LOOP
+            sankey_user_id := 'sankey_blog_' || LPAD(i::TEXT, 3, '0');
+            sankey_tab_id := 'sankey_blog_tab_' || LPAD(i::TEXT, 3, '0');
+            sankey_base_ts := NOW() - ((i % 14) || ' days')::INTERVAL;
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (45, sankey_base_ts, sankey_base_ts + INTERVAL '45 seconds', blog_home_id, 'https://google.com',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+
+            chain_step := i % 5;
+            IF chain_step = 0 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (60, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_getting_started_id, 'https://blog.vepo.dev/',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (50, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', blog_advanced_id, 'https://blog.vepo.dev/post/getting-started',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSIF chain_step = 1 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (55, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_getting_started_id, 'https://blog.vepo.dev/',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (40, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', blog_docker_id, 'https://blog.vepo.dev/post/getting-started',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSIF chain_step = 2 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (50, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_some_post_id, 'https://blog.vepo.dev/',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSIF chain_step = 3 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (35, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_about_id, 'https://blog.vepo.dev/',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (30, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', blog_contact_id, 'https://blog.vepo.dev/about',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSE
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (40, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_about_id, 'https://blog.vepo.dev/',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            END IF;
         END LOOP;
-    END LOOP;
+
+        -- 3b. blog.vepo.dev: Facebook + direct entry points
+        FOR i IN 1..12 LOOP
+            sankey_user_id := 'sankey_blog_fb_' || LPAD(i::TEXT, 3, '0');
+            sankey_tab_id := 'sankey_blog_fb_tab_' || LPAD(i::TEXT, 3, '0');
+            sankey_base_ts := NOW() - ((i % 10) || ' days')::INTERVAL;
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (40, sankey_base_ts, sankey_base_ts + INTERVAL '40 seconds', blog_home_id, 'https://facebook.com',
+                    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (35, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', blog_some_post_id, 'https://blog.vepo.dev/',
+                    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+        END LOOP;
+
+        FOR i IN 1..8 LOOP
+            sankey_user_id := 'sankey_blog_direct_' || LPAD(i::TEXT, 3, '0');
+            sankey_tab_id := 'sankey_blog_direct_tab_' || LPAD(i::TEXT, 3, '0');
+            sankey_base_ts := NOW() - ((i % 7) || ' days')::INTERVAL;
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (30, sankey_base_ts, sankey_base_ts + INTERVAL '30 seconds', blog_getting_started_id, 'direct',
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+        END LOOP;
+
+        -- 3c. shop.example.com: Facebook -> products -> product -> cart -> checkout
+        FOR i IN 1..20 LOOP
+            sankey_user_id := 'sankey_shop_' || LPAD(i::TEXT, 3, '0');
+            sankey_tab_id := 'sankey_shop_tab_' || LPAD(i::TEXT, 3, '0');
+            sankey_base_ts := NOW() - ((i % 12) || ' days')::INTERVAL;
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (35, sankey_base_ts, sankey_base_ts + INTERVAL '35 seconds', shop_products_id, 'https://facebook.com',
+                    'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+
+            IF i % 2 = 0 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (50, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', shop_laptop_id, 'https://shop.example.com/products',
+                        'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSE
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (45, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', shop_phone_id, 'https://shop.example.com/products',
+                        'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            END IF;
+
+            IF i % 3 = 0 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (25, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', shop_cart_id,
+                        CASE WHEN i % 2 = 0 THEN 'https://shop.example.com/product/laptop' ELSE 'https://shop.example.com/product/phone' END,
+                        'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (20, sankey_base_ts + INTERVAL '6 minutes', sankey_base_ts + INTERVAL '7 minutes', shop_checkout_id, 'https://shop.example.com/cart',
+                        'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            END IF;
+        END LOOP;
+
+        -- 3d. app.example.com: LinkedIn -> home -> dashboard -> analytics/settings
+        FOR i IN 1..15 LOOP
+            sankey_user_id := 'sankey_app_' || LPAD(i::TEXT, 3, '0');
+            sankey_tab_id := 'sankey_app_tab_' || LPAD(i::TEXT, 3, '0');
+            sankey_base_ts := NOW() - ((i % 9) || ' days')::INTERVAL;
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (40, sankey_base_ts, sankey_base_ts + INTERVAL '40 seconds', app_home_id, 'https://linkedin.com',
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+
+            INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+            VALUES (55, sankey_base_ts + INTERVAL '2 minutes', sankey_base_ts + INTERVAL '3 minutes', app_dashboard_id, 'https://app.example.com/',
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+
+            IF i % 2 = 0 THEN
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (45, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', app_analytics_id, 'https://app.example.com/dashboard',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            ELSE
+                INSERT INTO tb_views ("length", access_timestamp, end_timestamp, page_id, referrer, user_agent, user_id, tab_id, timezone)
+                VALUES (35, sankey_base_ts + INTERVAL '4 minutes', sankey_base_ts + INTERVAL '5 minutes', app_settings_id, 'https://app.example.com/dashboard',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', sankey_user_id, sankey_tab_id, 'America/Sao_Paulo');
+            END IF;
+        END LOOP;
 
     -- Step 4: Generate additional random view records
     FOR i IN 1..1000 LOOP

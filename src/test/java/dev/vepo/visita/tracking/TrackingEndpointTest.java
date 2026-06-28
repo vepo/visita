@@ -166,7 +166,7 @@ class TrackingEndpointTest {
                             .path("id");
 
         // Then exit the session
-        var exitRequest = new TrackingEndRequest(viewId, System.currentTimeMillis());
+        var exitRequest = new TrackingEndRequest(viewId, System.currentTimeMillis(), null, null);
 
         given().header(TrackingTokenFilter.TOKEN_HEADER, VALID_TOKEN)
                .header(TrackingTokenFilter.HOSTNAME_HEADER, VALID_HOSTNAME)
@@ -179,8 +179,55 @@ class TrackingEndpointTest {
     }
 
     @Test
+    void exit_noTokenTest() {
+        var exitRequest = new TrackingEndRequest(1L, System.currentTimeMillis(), null, null);
+
+        given().contentType(ContentType.JSON)
+               .body(exitRequest)
+               .when()
+               .post("/api/tracking/exit")
+               .then()
+               .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void exit_beaconAuthViaBodyTest() {
+        var createRequest = new TrackingStartRequest("en",
+                                                     "http://blog.vepo.dev/post/post-1",
+                                                     "www.google.com",
+                                                     "1920x1080",
+                                                     "tab-1",
+                                                     System.currentTimeMillis(),
+                                                     "America/Sao_Paulo",
+                                                     "Mozilla/5.0 Test",
+                                                     "user-1");
+
+        int viewId = given().header(TrackingTokenFilter.TOKEN_HEADER, VALID_TOKEN)
+                            .header(TrackingTokenFilter.HOSTNAME_HEADER, VALID_HOSTNAME)
+                            .contentType(ContentType.JSON)
+                            .body(createRequest)
+                            .when()
+                            .post("/api/tracking/access")
+                            .then()
+                            .extract()
+                            .path("id");
+
+        var exitRequest = new TrackingEndRequest(viewId,
+                                                 System.currentTimeMillis(),
+                                                 VALID_TOKEN,
+                                                 VALID_HOSTNAME);
+
+        given().contentType(ContentType.JSON)
+               .body(exitRequest)
+               .when()
+               .post("/api/tracking/exit")
+               .then()
+               .statusCode(Status.OK.getStatusCode());
+    }
+
+    @Test
     void exit_invalidIdTest() {
-        var exitRequest = new TrackingEndRequest(999999L, System.currentTimeMillis());
+        var exitRequest = new TrackingEndRequest(999999L, System.currentTimeMillis(), null, null);
 
         given().header(TrackingTokenFilter.TOKEN_HEADER, VALID_TOKEN)
                .header(TrackingTokenFilter.HOSTNAME_HEADER, VALID_HOSTNAME)

@@ -2,6 +2,7 @@ package dev.vepo.visita.dashboard;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -67,6 +68,44 @@ public class DashboardEndpoint {
                                            @QueryParam("startDate") LocalDate startDate,
                                            @QueryParam("endDate") LocalDate endDate) {
         return load(Selector.REFERRER, referrer, toDateTime(startDate, true), toDateTime(endDate, false));
+    }
+
+    @GET
+    @Operation(hidden = true)
+    @Path("/api/flows")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ReferrerPageFlow> flows(@QueryParam("startPage") String startPage,
+                                        @QueryParam("domain") String domain,
+                                        @QueryParam("referrer") String referrer,
+                                        @QueryParam("startDate") LocalDate startDate,
+                                        @QueryParam("endDate") LocalDate endDate) {
+        var selector = resolveSelector(domain, referrer);
+        var parameter = parameterFor(selector, domain, referrer);
+        var start = toDateTime(startDate, true);
+        var end = toDateTime(endDate, false);
+        if (Objects.isNull(startPage) || startPage.isBlank()) {
+            return statsRepository.buildReferrerPageFlows(selector, parameter, start, end);
+        }
+        return statsRepository.buildPageNavigationFlows(selector, parameter, startPage, start, end);
+    }
+
+    private Selector resolveSelector(String domain, String referrer) {
+        if (Objects.nonNull(domain) && !domain.isBlank()) {
+            return Selector.DOMAIN;
+        }
+        if (Objects.nonNull(referrer) && !referrer.isBlank()) {
+            return Selector.REFERRER;
+        }
+        return Selector.NONE;
+    }
+
+    private String parameterFor(Selector selector, String domain, String referrer) {
+        return switch (selector) {
+            case DOMAIN -> domain;
+            case REFERRER -> referrer;
+            case NONE -> null;
+            default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
+        };
     }
 
     private LocalDateTime toDateTime(LocalDate date, boolean upper) {

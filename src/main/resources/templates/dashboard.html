@@ -28,6 +28,13 @@
             display: block;
             width: 100%;
         }
+        .sankey-container .sankey-label-drillable {
+            cursor: pointer;
+            fill: #2563eb;
+        }
+        .sankey-container .sankey-label-drillable:hover {
+            text-decoration: underline;
+        }
         .date-filter {
             background: white;
             border-radius: 0.5rem;
@@ -131,8 +138,12 @@
                 </div>
             </div>
             <div class="card col-span-1 lg:col-span-2">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Fluxo Origem → Página</h2>
-                <p class="text-sm text-gray-500 mb-4">Principais caminhos de tráfego do referenciador de entrada até a página visitada.</p>
+                <h2 class="text-xl font-semibold text-gray-700 mb-2">Fluxo Origem → Página</h2>
+                <div id="sankey-nav" class="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-600"></div>
+                <p id="sankey-description" class="text-sm text-gray-500 mb-4">
+                    Principais caminhos de tráfego do referenciador de entrada até a página visitada.
+                    Clique em uma página para explorar os próximos destinos.
+                </p>
                 <div id="referrer-sankey" class="sankey-container"></div>
             </div>
             <div class="card">

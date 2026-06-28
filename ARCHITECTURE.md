@@ -29,7 +29,7 @@ Canonical reference for developers and AI agents working on Visita. The public-f
 ### Dashboard (HTML)
 
 1. `GET /dashboard` (optional `startDate`, `endDate`, `/domain/{domain}`, `/referrer/{referrer}`).
-2. `DashboardEndpoint` queries `StatsRepository` and renders Qute template with chart data (Chart.js daily charts, D3 Sankey referrer→page flows).
+2. `DashboardEndpoint` queries `StatsRepository` and renders Qute template with chart data (Chart.js daily charts, D3 Sankey referrer→page flows with page drill-down via `GET /dashboard/api/flows`).
 
 ### Stats summary (JSON)
 
@@ -56,7 +56,7 @@ Canonical reference for developers and AI agents working on Visita. The public-f
 | `POST` | `/api/tracking/access` | Token | Start session (204 when path ignored) |
 | `POST` | `/api/tracking/view` | Token | SPA route change / new page in session (204 when path ignored) |
 | `POST` | `/api/tracking/ping` | Token | Keep-alive |
-| `POST` | `/api/tracking/exit` | None | End session (sendBeacon) |
+| `POST` | `/api/tracking/exit` | Token (header or JSON body) | End session (`sendBeacon` sends credentials in body) |
 
 Request/response records live in `dev.vepo.visita.tracking`.
 
@@ -176,6 +176,7 @@ Full DDL: `src/main/resources/db/migration/`
 - Dev port: **8081** (`%dev.quarkus.http.port`).
 - `%dev.quarkus.flyway.clean-at-start=true` resets schema; `DatabaseDevSetup` runs `dev-import.sql` on startup.
 - Seeded domain for local tracker tests: `localhost` / token `local-dev`.
+- **Sankey demo funnels** in `dev-import.sql` Step 3 — try `/dashboard`: click `blog.vepo.dev/` → `/post/getting-started` → `/post/advanced-topics`; also `shop.example.com/products` → products/cart/checkout and `app.example.com/` → dashboard → analytics.
 
 ## 14. Configuration (selected)
 
@@ -194,7 +195,7 @@ See `src/main/resources/application.properties`.
 
 - **Disabled domains** — `TrackingTokenFilter` rejects unknown or disabled domain/token pairs.
 - **Page creation** — `ViewsService` auto-creates `Page` only when the domain already exists; register domains first.
-- **Exit without token** — `/api/tracking/exit` is intentionally unauthenticated (sendBeacon limitation).
+- **Exit auth** — `/api/tracking/exit` validates the domain token from headers or from `domainToken` / `domainHostname` in the JSON body (required for `sendBeacon`, which cannot send custom headers). `visita.js` falls back to `fetch` with `keepalive` when `sendBeacon` is unavailable.
 - **Dashboard dates** — `endDate` query param is exclusive (start of next day).
 - **Tests mutating DB** — call `Given.cleanDatabase()` in `@BeforeEach` when not relying on dev-import isolation.
 

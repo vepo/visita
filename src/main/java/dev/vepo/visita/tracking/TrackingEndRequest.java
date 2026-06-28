@@ -4,4 +4,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record TrackingEndRequest(@NotNull long id,
-                                 @NotNull @Min(1) long timestamp) {}
+                                 @NotNull @Min(1) long timestamp,
+                                 String domainToken,
+                                 String domainHostname) {}
