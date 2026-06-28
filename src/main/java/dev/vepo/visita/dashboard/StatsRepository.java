@@ -24,8 +24,10 @@ public class StatsRepository {
     private static final int REFERRER_PAGE_FLOW_LIMIT = 30;
     private static final String REFERRER_MATCHES_START_PAGE = """
                                                               (v.referrer = :startPage OR
-                                                               v.referrer LIKE CONCAT('http://', :startPage, '%') OR
-                                                               v.referrer LIKE CONCAT('https://', :startPage, '%'))
+                                                               v.referrer = CONCAT('http://', :startPage) OR
+                                                               v.referrer = CONCAT('https://', :startPage) OR
+                                                               v.referrer LIKE CONCAT('http://', :startPage, '?%') OR
+                                                               v.referrer LIKE CONCAT('https://', :startPage, '?%'))
                                                               """;
     private static final String TARGET_PAGE_NOT_START_PAGE = "CONCAT(v.page.domain.hostname, v.page.path) <> :startPage";
 
