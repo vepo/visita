@@ -30,7 +30,7 @@ Terms below are the **only** approved names for aggregates, entities, states, ac
 |------|---------|--------------|
 | **Visita** | The analytics product (tracker + API + dashboard). | — |
 | **Domain** | A tracked website identified by `hostname` and protected by a secret **tracking token**. May be **disabled**. Optional **ignored path patterns** exclude URL paths from tracking. | `Domain`, `tb_domains` |
-| **Ignored path pattern** | Java regex matched against page URL path; views on matching paths are not recorded. | `Domain.ignoredPathPatterns`, Backoffice **Caminhos ignorados** |
+| **Ignored path pattern** | Java regex matched against page URL path; views on matching paths are not recorded and are excluded from dashboard stats. | `Domain.ignoredPathPatterns`, Backoffice **Caminhos ignorados** |
 | **Tracking token** | Secret sent by the embed script; paired with hostname on each tracking request. | `Domain.token`, header `VISITA-DOMAIN-TOKEN` |
 | **Page** | A URL path under a domain (`/` + path). Created on first visit if the domain exists. | `Page`, `tb_pages` |
 | **View** | A browsing session segment on a page: access time, optional end time, duration, referrer, user/tab ids. | `View`, `tb_views` |
