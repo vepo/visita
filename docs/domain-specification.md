@@ -62,6 +62,7 @@ Terms below are the **only** approved names for aggregates, entities, states, ac
 | **Unique views** | Distinct users/tabs in range. | `UniqueUsersStats` |
 | **Referrer stats** | Breakdown by session entry origin (`COALESCE(originalReferrer, referrer)`). | `ReferrerStats` |
 | **Referrer page flow** | Sankey link from entry referrer to visited page. | `ReferrerPageFlow` |
+| **Page navigation flow** | Sankey link from a selected page (immediate referrer) to next visited pages. | `ReferrerPageFlow`, `GET /dashboard/api/flows?startPage=` |
 | **Domain stats** | Breakdown by domain hostname. | `DomainStats` |
 | **Page stats** | Breakdown by page path. | `PageStats` |
 | **Stats summary** | JSON KPI bundle for Backoffice home (total views, top domains/pages). | `StatsSummary`, `GET /api/stats/summary` |

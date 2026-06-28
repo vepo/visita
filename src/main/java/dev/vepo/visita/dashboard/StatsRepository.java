@@ -22,6 +22,12 @@ public class StatsRepository {
     private static final String EXCLUDE_IGNORED_PAGES = "v.page.id NOT IN :excludedPageIds";
     private static final Set<Long> NO_EXCLUDED_PAGES = Set.of(-1L);
     private static final int REFERRER_PAGE_FLOW_LIMIT = 30;
+    private static final String REFERRER_MATCHES_START_PAGE = """
+                                                              (v.referrer = :startPage OR
+                                                               v.referrer LIKE CONCAT('http://', :startPage, '%') OR
+                                                               v.referrer LIKE CONCAT('https://', :startPage, '%'))
+                                                              """;
+    private static final String TARGET_PAGE_NOT_START_PAGE = "CONCAT(v.page.domain.hostname, v.page.path) <> :startPage";
 
     private final EntityManager entityManager;
 
@@ -566,6 +572,91 @@ public class StatsRepository {
                                                    GROUP BY COALESCE(v.originalReferrer, v.referrer), v.page
                                                    ORDER BY COUNT(v.id) DESC
                                                    """.formatted(EXCLUDE_IGNORED_PAGES), ReferrerPageFlow.class)
+                                      .setParameter("excludedPageIds", excludedPageIds)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
+                                      .getResultStream()
+                                      .toList();
+            default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
+        };
+        return flows.stream().limit(REFERRER_PAGE_FLOW_LIMIT).toList();
+    }
+
+    public List<ReferrerPageFlow> buildPageNavigationFlows(Selector selector,
+                                                           String parameter,
+                                                           String startPage,
+                                                           LocalDateTime startDate,
+                                                           LocalDateTime endDate) {
+        var excludedPageIds = excludedPageIdsParameter();
+        var flows = switch (selector) {
+            case REFERRER -> entityManager.createQuery("""
+                                                       SELECT new ReferrerPageFlow(:startPage, v.page, COUNT(v.id))
+                                                       FROM View v
+                                                       WHERE v.page IS NOT NULL AND
+                                                             v.referrer IS NOT NULL AND
+                                                             %s AND
+                                                             %s AND
+                                                             (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
+                                                             v.length IS NOT NULL AND
+                                                             %s AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                       GROUP BY v.page
+                                                       ORDER BY COUNT(v.id) DESC
+                                                       """.formatted(REFERRER_MATCHES_START_PAGE,
+                                                                     TARGET_PAGE_NOT_START_PAGE,
+                                                                     EXCLUDE_IGNORED_PAGES),
+                                                       ReferrerPageFlow.class)
+                                          .setParameter("startPage", startPage)
+                                          .setParameter("referrer", parameter)
+                                          .setParameter("excludedPageIds", excludedPageIds)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
+                                          .getResultStream()
+                                          .toList();
+            case DOMAIN -> entityManager.createQuery("""
+                                                     SELECT new ReferrerPageFlow(:startPage, v.page, COUNT(v.id))
+                                                     FROM View v
+                                                     WHERE v.page IS NOT NULL AND
+                                                           v.referrer IS NOT NULL AND
+                                                           %s AND
+                                                           %s AND
+                                                           v.page.domain.hostname = :hostname AND
+                                                           v.length IS NOT NULL AND
+                                                           %s AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                     GROUP BY v.page
+                                                     ORDER BY COUNT(v.id) DESC
+                                                     """.formatted(REFERRER_MATCHES_START_PAGE,
+                                                                   TARGET_PAGE_NOT_START_PAGE,
+                                                                   EXCLUDE_IGNORED_PAGES),
+                                                     ReferrerPageFlow.class)
+                                        .setParameter("startPage", startPage)
+                                        .setParameter("hostname", parameter)
+                                        .setParameter("excludedPageIds", excludedPageIds)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
+                                        .getResultStream()
+                                        .toList();
+            case NONE -> entityManager.createQuery("""
+                                                   SELECT new ReferrerPageFlow(:startPage, v.page, COUNT(v.id))
+                                                   FROM View v
+                                                   WHERE v.page IS NOT NULL AND
+                                                         v.referrer IS NOT NULL AND
+                                                         %s AND
+                                                         %s AND
+                                                         v.length IS NOT NULL AND
+                                                         %s AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                   GROUP BY v.page
+                                                   ORDER BY COUNT(v.id) DESC
+                                                   """.formatted(REFERRER_MATCHES_START_PAGE,
+                                                                 TARGET_PAGE_NOT_START_PAGE,
+                                                                 EXCLUDE_IGNORED_PAGES),
+                                                   ReferrerPageFlow.class)
+                                      .setParameter("startPage", startPage)
                                       .setParameter("excludedPageIds", excludedPageIds)
                                       .setParameter("startDate", startDate)
                                       .setParameter("endDate", endDate)

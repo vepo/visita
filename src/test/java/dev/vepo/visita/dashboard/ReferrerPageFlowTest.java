@@ -89,4 +89,35 @@ class ReferrerPageFlowTest {
         assertThat(flows).hasSize(1);
         assertThat(flows.get(0).page()).isEqualTo("blog.vepo.dev/");
     }
+
+    @Test
+    void shouldBuildPageNavigationFlowsFromSelectedStartPage() {
+        Given.view()
+             .withPage("https://blog.vepo.dev/")
+             .withReferrer("https://google.com")
+             .withLength(30)
+             .persist();
+        Given.view()
+             .withPage("https://blog.vepo.dev/about")
+             .withReferrer("https://blog.vepo.dev/")
+             .withLength(30)
+             .persist();
+        Given.view()
+             .withPage("https://blog.vepo.dev/contact")
+             .withReferrer("https://blog.vepo.dev/about")
+             .withLength(30)
+             .persist();
+
+        var flowsFromHome = statsRepository.buildPageNavigationFlows(Selector.NONE, null, "blog.vepo.dev/", null, null);
+
+        assertThat(flowsFromHome).hasSize(1);
+        assertThat(flowsFromHome.get(0).referrer()).isEqualTo("blog.vepo.dev/");
+        assertThat(flowsFromHome.get(0).page()).isEqualTo("blog.vepo.dev/about");
+        assertThat(flowsFromHome.get(0).views()).isEqualTo(1L);
+
+        var flowsFromAbout = statsRepository.buildPageNavigationFlows(Selector.NONE, null, "blog.vepo.dev/about", null, null);
+
+        assertThat(flowsFromAbout).hasSize(1);
+        assertThat(flowsFromAbout.get(0).page()).isEqualTo("blog.vepo.dev/contact");
+    }
 }

@@ -14,6 +14,8 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -25,10 +27,12 @@ public class TrackingEndpoint {
     private static final Logger logger = LoggerFactory.getLogger(TrackingEndpoint.class);
 
     private final ViewsService visitaService;
+    private final TrackingDomainValidator trackingDomainValidator;
 
     @Inject
-    public TrackingEndpoint(ViewsService visitaService) {
+    public TrackingEndpoint(ViewsService visitaService, TrackingDomainValidator trackingDomainValidator) {
         this.visitaService = visitaService;
+        this.trackingDomainValidator = trackingDomainValidator;
     }
 
     @POST
@@ -51,7 +55,11 @@ public class TrackingEndpoint {
 
     @POST
     @Path("/exit")
-    public Response exit(@Valid TrackingEndRequest request) {
+    public Response exit(@Valid TrackingEndRequest request, @Context ContainerRequestContext requestContext) {
+        var hostname = firstNonBlank(requestContext.getHeaderString(TrackingTokenFilter.HOSTNAME_HEADER), request.domainHostname());
+        var token = firstNonBlank(requestContext.getHeaderString(TrackingTokenFilter.TOKEN_HEADER), request.domainToken());
+        trackingDomainValidator.requireValidDomain(hostname, token);
+
         logger.info("Registering session exit - request={}", request);
 
         visitaService.registrarSaida(request.id(), request.timestamp());
@@ -92,5 +100,12 @@ public class TrackingEndpoint {
 
         logger.debug("Keep-alive ping processed successfully - request={}", request);
         return Response.ok().build();
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) {
+            return primary;
+        }
+        return fallback;
     }
 }

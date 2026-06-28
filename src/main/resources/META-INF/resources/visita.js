@@ -436,22 +436,34 @@ class VisitaAnalytics {
      * @returns {Promise}
      */
     async sendBeaconRequest(url, data) {
+        const payload = {
+            ...data,
+            domainToken: this.credentials.token,
+            domainHostname: this.credentials.domain
+        };
+
         return new Promise((resolve) => {
-            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
             const success = navigator.sendBeacon?.(url, blob);
-            
+
             if (success) {
                 resolve({ success: true });
-            } else {
-                // Fallback to fetch with keepalive
-                fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                    keepalive: true
-                }).then(() => resolve({ success: true }))
-                  .catch(() => resolve({ success: false }));
+                return;
             }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
+                    'VISITA-DOMAIN-TOKEN': this.credentials.token
+                },
+                body: JSON.stringify(payload),
+                keepalive: true,
+                credentials: 'omit'
+            }).then(response => resolve({ success: response.ok || response.status === 204 }))
+              .catch(() => resolve({ success: false }));
         });
     }
 
