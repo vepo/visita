@@ -25,6 +25,17 @@ public class VisitaTemplateExtension {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
+    public static String jsonString(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
+    }
+
     public static String timestamp(Number value) {
         if (value == null) {
             return "0";

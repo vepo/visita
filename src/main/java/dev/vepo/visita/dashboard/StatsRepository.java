@@ -21,6 +21,7 @@ public class StatsRepository {
     private static final Logger logger = LoggerFactory.getLogger(StatsRepository.class);
     private static final String EXCLUDE_IGNORED_PAGES = "v.page.id NOT IN :excludedPageIds";
     private static final Set<Long> NO_EXCLUDED_PAGES = Set.of(-1L);
+    private static final int REFERRER_PAGE_FLOW_LIMIT = 30;
 
     private final EntityManager entityManager;
 
@@ -504,6 +505,75 @@ public class StatsRepository {
                                       .toList();
             default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
         };
+    }
+
+    public List<ReferrerPageFlow> buildReferrerPageFlows(Selector selector,
+                                                         String parameter,
+                                                         LocalDateTime startDate,
+                                                         LocalDateTime endDate) {
+        var excludedPageIds = excludedPageIdsParameter();
+        var flows = switch (selector) {
+            case REFERRER -> entityManager.createQuery("""
+                                                       SELECT new ReferrerPageFlow(COALESCE(v.originalReferrer, v.referrer),
+                                                                                   v.page,
+                                                                                   COUNT(v.id))
+                                                       FROM View v
+                                                       WHERE v.page IS NOT NULL AND
+                                                             (v.originalReferrer = :referrer OR v.referrer = :referrer) AND
+                                                             v.length IS NOT NULL AND
+                                                             %s AND
+                                                             (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                             (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                       GROUP BY COALESCE(v.originalReferrer, v.referrer), v.page
+                                                       ORDER BY COUNT(v.id) DESC
+                                                       """.formatted(EXCLUDE_IGNORED_PAGES), ReferrerPageFlow.class)
+                                          .setParameter("referrer", parameter)
+                                          .setParameter("excludedPageIds", excludedPageIds)
+                                          .setParameter("startDate", startDate)
+                                          .setParameter("endDate", endDate)
+                                          .getResultStream()
+                                          .toList();
+            case DOMAIN -> entityManager.createQuery("""
+                                                     SELECT new ReferrerPageFlow(COALESCE(v.originalReferrer, v.referrer),
+                                                                                 v.page,
+                                                                                 COUNT(v.id))
+                                                     FROM View v
+                                                     WHERE v.page IS NOT NULL AND
+                                                           v.page.domain.hostname = :hostname AND
+                                                           v.length IS NOT NULL AND
+                                                           %s AND
+                                                           (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                           (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                     GROUP BY COALESCE(v.originalReferrer, v.referrer), v.page
+                                                     ORDER BY COUNT(v.id) DESC
+                                                     """.formatted(EXCLUDE_IGNORED_PAGES), ReferrerPageFlow.class)
+                                        .setParameter("hostname", parameter)
+                                        .setParameter("excludedPageIds", excludedPageIds)
+                                        .setParameter("startDate", startDate)
+                                        .setParameter("endDate", endDate)
+                                        .getResultStream()
+                                        .toList();
+            case NONE -> entityManager.createQuery("""
+                                                   SELECT new ReferrerPageFlow(COALESCE(v.originalReferrer, v.referrer),
+                                                                               v.page,
+                                                                               COUNT(v.id))
+                                                   FROM View v
+                                                   WHERE v.page IS NOT NULL AND
+                                                         v.length IS NOT NULL AND
+                                                         %s AND
+                                                         (COALESCE(:startDate, NULL) IS NULL OR v.accessTimestamp >= :startDate) AND
+                                                         (COALESCE(:endDate, NULL) IS NULL OR v.accessTimestamp < :endDate)
+                                                   GROUP BY COALESCE(v.originalReferrer, v.referrer), v.page
+                                                   ORDER BY COUNT(v.id) DESC
+                                                   """.formatted(EXCLUDE_IGNORED_PAGES), ReferrerPageFlow.class)
+                                      .setParameter("excludedPageIds", excludedPageIds)
+                                      .setParameter("startDate", startDate)
+                                      .setParameter("endDate", endDate)
+                                      .getResultStream()
+                                      .toList();
+            default -> throw new UnsupportedOperationException("Selector not implemented! selector=%s".formatted(selector));
+        };
+        return flows.stream().limit(REFERRER_PAGE_FLOW_LIMIT).toList();
     }
 
     public StatsSummary buildStatsSummary(Selector selector,

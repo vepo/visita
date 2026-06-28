@@ -61,6 +61,7 @@ Terms below are the **only** approved names for aggregates, entities, states, ac
 | **Daily views** | View counts grouped by day. | `DailyStats` |
 | **Unique views** | Distinct users/tabs in range. | `UniqueUsersStats` |
 | **Referrer stats** | Breakdown by session entry origin (`COALESCE(originalReferrer, referrer)`). | `ReferrerStats` |
+| **Referrer page flow** | Sankey link from entry referrer to visited page. | `ReferrerPageFlow` |
 | **Domain stats** | Breakdown by domain hostname. | `DomainStats` |
 | **Page stats** | Breakdown by page path. | `PageStats` |
 | **Stats summary** | JSON KPI bundle for Backoffice home (total views, top domains/pages). | `StatsSummary`, `GET /api/stats/summary` |
@@ -79,6 +80,7 @@ Terms below are the **only** approved names for aggregates, entities, states, ac
 |------------|-------------|
 | Domínios | Domain list context (admin API consumer) |
 | Referenciador | Referrer filter |
+| Fluxo Origem → Página | Referrer page flow Sankey |
 
 ---
 
