@@ -1,0 +1,62 @@
+---
+description: Domain Model Conventions - Ensure domain model usage in code and tests, with continuous alignment to the domain specification.
+globs:
+  - 'src/main/java/**/*.java'
+  - 'src/main/resources/**/*.js'
+  - 'src/main/resources/**/*.html'
+  - 'src/test/**/*.java'
+alwaysApply: true
+---
+
+# Ensure Domain Model Usage on Code
+
+## Domain Specification Location
+
+The domain specification MUST reside in [`docs/domain-specification.md`](../../docs/domain-specification.md).  
+This specification MUST contain a dedicated section titled **"Ubiquitous Language"** that defines all domain terms, their meanings, and their relationships.
+
+Also follow [ARCHITECTURE.md](../../ARCHITECTURE.md) for technical layout ([architecture.mdc](architecture.mdc)).
+
+## Pre-Change Checklist (Before Any Code Change)
+
+Before implementing any change, you MUST:
+
+1. **Read the domain specification** completely, especially the Ubiquitous Language section.
+2. **Question the change against the domain**:
+   - Does this change affect the domain (new entities, value objects, aggregates, events, or business rules)?
+   - Does the domain allow the intended implementation?
+   - Do we need to extend the domain specification?
+   - Is there a new domain concept introduced by the change?
+   - Are any UI elements implied by the change? If yes, document them in the ubiquitous language.
+
+**Do NOT write any code or test until these questions are answered.** If the answer changes the domain, update the specification first.
+
+## Coding Rules
+
+### Code Must Use Domain Language
+
+Every identifier in the code (class names, method names, variable names) MUST reflect the domain's ubiquitous language.
+
+Naming must follow ubiquitous language. See also [visita-tell-dont-ask.mdc](visita-tell-dont-ask.mdc) and [visita-law-of-demeter.mdc](visita-law-of-demeter.mdc).
+
+### UI Elements Must Be Defined in Domain Terms
+
+HTML, `visita.js`, and dashboard labels MUST be traceable to the Ubiquitous Language section.
+
+## Testing Rules
+
+Test code MUST use domain language (`Given.view()`, `Given.domain()`, scenario names like `shouldRegisterAccessForKnownDomain`).
+
+## Post-Change Update Rule
+
+After ANY change, re-evaluate `docs/domain-specification.md` and [ARCHITECTURE.md](../../ARCHITECTURE.md):
+
+- New domain concepts → Ubiquitous Language section.
+- Modified rules → update specification.
+- New routes or packages → ARCHITECTURE.md.
+
+**If the domain specification is out of sync, fix it before finishing the task.**
+
+## Violation Handling
+
+Refactor code or tests that use technical names instead of domain terms when you touch them.

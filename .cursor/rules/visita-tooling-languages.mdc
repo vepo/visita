@@ -1,0 +1,25 @@
+---
+description: No Python; JavaScript browser-only for tracker and dashboard assets
+alwaysApply: true
+---
+
+# Tooling languages
+
+## No Python
+
+- Do **not** add `.py` files, `requirements.txt`, or Python in CI.
+
+## Scripts
+
+If automation is needed, use **bash** (`#!/usr/bin/env bash`, `set -euo pipefail`) or **JBang** Java. No `scripts/` directory exists yet — follow this rule when adding one.
+
+## JavaScript — browser only
+
+- **Allowed:** `src/main/resources/META-INF/resources/visita.js` and `META-INF/resources/dashboard/*.js`.
+- **Forbidden:** Node.js tooling, `package.json` for build scripts, or JS under CI glue.
+
+User-facing tracking stays in the **vanilla JS** embed script; do not add a Node bundler.
+
+## CI
+
+GitHub Actions: **bash** or **Maven** — not Python or Node script runners.

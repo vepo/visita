@@ -42,6 +42,7 @@ public class CreateDomainEndpoint {
         }
 
         return DomainResponse.from(this.domainRepository.save(new Domain(request.hostname(),
-                                                                         UUID.randomUUID().toString())));
+                                                                         UUID.randomUUID().toString(),
+                                                                         request.ignoredPathPatterns())));
     }
 }

@@ -1,0 +1,56 @@
+---
+description: Java endpoint, repository, and entity conventions
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Java conventions
+
+## Import order
+
+1. `java.*` / `javax.*` / `jakarta.*`
+2. `io.quarkus.*`
+3. Third-party
+4. `dev.vepo.visita.*` / `dev.vepo.infra.*`
+
+## Style
+
+- Formatting and imports: [visita-format-imports.mdc](visita-format-imports.mdc) — `resources/formatter.xml`, no unused imports, no FQN except name collision.
+- **Dead code:** remove unused locals, parameters, fields, and private methods in every change you touch.
+- String building: [visita-strings.mdc](visita-strings.mdc) — `.formatted()` first, `StringBuilder` for loops; no `+` concatenation.
+
+## `var` and local variables
+
+- Prefer **`var`** when the type is clear from the right-hand side.
+- **Inline** single-use locals when the call chain stays readable (~120 char lines).
+- Keep a local when the value is reused or splitting aids clarity.
+
+## Functional style
+
+- Prefer **streams**, **`Optional`**, and **`map` / `filter` / `flatMap`** for straight pipelines.
+- Use **`ifPresentOrElse`**, **`orElseThrow`**, **`orElseGet`** instead of `isPresent()` + `get()`.
+- Imperative code is fine for JPA Criteria setup or multi-step mutations.
+
+## Logging
+
+- Always **SLF4J** — never `System.out` or `System.err`.
+- One static logger per class; **parameterized** messages.
+- **Production** (`src/main/java/**`): do not call methods in log arguments.
+- Do not log domain tokens, JWTs, or secrets.
+
+## Entities
+
+- `jakarta.persistence`; `Long` ids; `LocalDateTime` for timestamps.
+- `View` → `Page` → `Domain` association chain; lazy by default; `JOIN FETCH` when needed in queries.
+
+## Tell, Don't Ask
+
+- [visita-tell-dont-ask.mdc](visita-tell-dont-ask.mdc) — intent methods on entities/services (`extendDuration`, `isSamePage`).
+
+## Law of Demeter
+
+- [visita-law-of-demeter.mdc](visita-law-of-demeter.mdc) — no train-wreck getter chains for business logic.
+
+## Records
+
+- Use Java records for API request/response DTOs in endpoint packages (`TrackingStartRequest`, `DomainResponse`).

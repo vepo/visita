@@ -1,0 +1,62 @@
+---
+description: Run local static analysis and fix new issues before finishing a task
+alwaysApply: true
+---
+
+# Static analysis — finish checklist
+
+Before marking a coding task **done**, run **local** checks only (no SonarCloud upload required for day-to-day work).
+
+## When to run
+
+- After production or test code changes (Java, SQL migrations, `visita.js`, dashboard JS).
+- Skip for docs-only, `.mdc` rules-only, or comment-only edits.
+
+## Required commands (match CI)
+
+Primary gate — same as [`.github/workflows/maven.yml`](../../.github/workflows/maven.yml):
+
+```bash
+./mvnw -B clean test
+```
+
+Must pass: compile, formatter phase (`formatter-maven-plugin` on `process-sources`), unit and integration tests. `@WebTest` needs Chrome installed locally (CI uses `browser-actions/setup-chrome`).
+
+Optional faster compile-only check:
+
+```bash
+./mvnw -B clean compile
+```
+
+## Formatting
+
+Java formatting uses [`resources/formatter.xml`](../../resources/formatter.xml) via the formatter Maven plugin (runs on `process-sources`). After editing Java, run a full build or:
+
+```bash
+./mvnw -B process-sources
+```
+
+See [visita-format-imports.mdc](visita-format-imports.mdc).
+
+## IDE diagnostics
+
+On changed source files, run the workspace linter (`ReadLints`) and fix **new** errors and warnings in paths you touched.
+
+## What to fix
+
+1. **Compile errors** and test failures from `mvn test`.
+2. **Formatting** drift on edited `*.java` files.
+3. **New** linter warnings in edited files.
+4. Obvious smells you introduced — align with [visita-java.mdc](visita-java.mdc) and [visita-core.mdc](visita-core.mdc).
+
+Pre-existing issues in unrelated files: fix only if trivial; do not scope-creep.
+
+## Do not finish while
+
+- `./mvnw test` fails on your branch.
+- Linter reports new problems in files you changed.
+- You knowingly left failing tests in touched code.
+
+## Report to the user
+
+When wrapping up, briefly note: `mvn test` (pass / fail fixed), formatter (ok / applied), linter (clean / issues fixed).

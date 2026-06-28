@@ -1,0 +1,38 @@
+---
+description: JPA query conventions — Criteria API, JPQL, native SQL
+globs: src/main/java/**/*Repository.java
+alwaysApply: false
+---
+
+# JPA usage
+
+All database queries belong in `*Repository` classes ([visita-layered-architecture.mdc](visita-layered-architecture.mdc)).
+
+## 1. Dynamic queries → Criteria API
+
+Use when predicates, joins, or sort change based on input (dashboard filters in `StatsRepository`).
+
+- Build predicates with `cb.and` / `cb.or`.
+- Bind values via parameters — never interpolate user input into query strings.
+
+## 2. Static queries → JPQL
+
+Use `entityManager.createQuery(...)` when query shape is fixed.
+
+- Text blocks for multi-line JPQL.
+- Named parameters (`:domainId`, `:startDate`).
+- `Optional`: `getResultStream().findFirst()`.
+- `JOIN FETCH` when loading associations for the same request.
+
+## 3. Native SQL → last resort
+
+Use `createNativeQuery` for analytics aggregations, date casts, or DB-specific functions `StatsRepository` needs.
+
+- Keep SQL in the repository; comment why JPQL is insufficient.
+- Named parameters; map rows to records/DTOs in the repository.
+- Table/column names must match Flyway migrations (`tb_*`).
+
+## Never
+
+- `EntityManager` or queries in `*Endpoint` / `*Service`.
+- Unparameterized SQL built from request strings.

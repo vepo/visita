@@ -1,0 +1,32 @@
+---
+description: visita.js embed script conventions
+globs: src/main/resources/META-INF/resources/**/*.js
+alwaysApply: false
+---
+
+# Client tracker (visita.js)
+
+## Role
+
+- Single embed script sites load via `<script async src="…/visita.js" data-token="…">`.
+- Calls `POST /api/tracking/*` with `VISITA-DOMAIN-TOKEN` and `VISITA-DOMAIN-HOSTNAME` headers.
+- See [ARCHITECTURE.md](../../ARCHITECTURE.md) §4 and [README.md](../../README.md) for behavior.
+
+## Conventions
+
+- Keep the script **self-contained** — no npm build step.
+- Use `sendBeacon` for `/api/tracking/exit` with fetch fallback.
+- Retry failed requests (existing `RETRY_ATTEMPTS` pattern).
+- SPA support via `MutationObserver` — preserve when changing route detection.
+
+## When changing tracking behavior
+
+1. Update backend `TrackingEndpoint` / `ViewsService` if payload or semantics change.
+2. Update [ARCHITECTURE.md](../../ARCHITECTURE.md) §4 API table.
+3. Add or extend `@WebTest` / `@QuarkusTest` coverage.
+4. Verify against `localhost` + `local-dev` token in dev.
+
+## Never
+
+- Break backward compatibility for in-flight sessions without a migration plan.
+- Store secrets in the client beyond the per-domain token (expected in `data-token`).

@@ -1,0 +1,29 @@
+---
+description: Keep dev-import.sql valid across Flyway schema changes
+globs: src/main/resources/dev-import.sql,src/main/resources/db/migration/*.sql
+alwaysApply: false
+---
+
+# dev-import.sql — schema change safety
+
+[`dev-import.sql`](../../src/main/resources/dev-import.sql) runs on **every** `%dev` startup ([`DatabaseDevSetup`](../../src/main/java/dev/vepo/visita/infra/DatabaseDevSetup.java)), after Flyway applies migrations. **Any schema change must not break that script.**
+
+## When you change the schema (Flyway)
+
+Work through this list **in the same PR** as the migration:
+
+1. **Seed section** — New `NOT NULL` columns, FKs, or constraints require matching `INSERT` values. Reuse subqueries, not hard-coded IDs.
+2. **View generation loop** — Update column list in `INSERT INTO tb_views` if the table shape changed.
+3. **Verify** — Restart `./mvnw quarkus:dev` and confirm `DatabaseDevSetup` runs without SQL errors.
+
+## Conventions
+
+- **Prefer** `ON CONFLICT DO NOTHING` for idempotent domain/page inserts.
+- **Order** inserts: domains → pages → views (FK direction).
+- **Avoid** `TRUNCATE … CASCADE` unless you understand all inbound FKs.
+
+## Quick checklist (migrations)
+
+- [ ] Inserts satisfy new `NOT NULL`, FK, and check constraints
+- [ ] View generation loop matches `tb_views` columns
+- [ ] `%dev` startup completes with `dev-import.sql` executing successfully

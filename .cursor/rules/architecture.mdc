@@ -1,0 +1,40 @@
+---
+description: Always read ARCHITECTURE.md before coding; update it when structure changes
+alwaysApply: true
+---
+
+# Architecture document — read and maintain
+
+[`ARCHITECTURE.md`](../../ARCHITECTURE.md) is the canonical map of Visita. Agents must treat it as source of truth alongside the code.
+
+## Before starting work
+
+1. **Read** `ARCHITECTURE.md` (at least the sections relevant to your task: packages, APIs, data model, checklist).
+2. Skim existing code in the same package — match naming and layering already documented there.
+
+## While implementing
+
+- Follow layering and naming in ARCHITECTURE.md §7–§9 and [visita-layered-architecture.mdc](visita-layered-architecture.mdc).
+- New routes, tables, packages, auth rules, or client tracking behavior → plan an ARCHITECTURE.md update in the same change.
+
+## Before marking a task done
+
+Update `ARCHITECTURE.md` when you changed any of:
+
+| Change | Update |
+|--------|--------|
+| New or renamed REST path | §4–§6 API tables |
+| New entity / table / migration | §3, §11 |
+| New package or moved class | §8 package layout |
+| New auth or filter | §2 lifecycle, §10 |
+| New dev seed expectations | §13 + [development-experience.mdc](development-experience.mdc) |
+| New test convention | §7 Testing |
+| New config property | §14 |
+
+Keep edits **concise** — tables and bullet lists, not prose essays. Remove or fix stale entries in the same PR.
+
+## Never
+
+- Add significant behavior without checking ARCHITECTURE.md first.
+- Leave ARCHITECTURE.md out of date after a structural change.
+- Duplicate long architecture prose in rules or comments — link to `ARCHITECTURE.md` instead.
