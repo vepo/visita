@@ -58,9 +58,9 @@ Canonical reference for developers and AI agents working on Visita. The public-f
 | `POST` | `/api/tracking/ping` | Token | Keep-alive |
 | `POST` | `/api/tracking/exit` | Token (header or JSON body) | End session (`sendBeacon` sends credentials in body) |
 
-Request/response records live in `dev.vepo.visita.tracking`.
+Request/response records live in `dev.vepo.visita.tracking`. JSON response records used in native builds need `@RegisterForReflection`.
 
-Client script: `src/main/resources/META-INF/resources/visita.js`.
+Client script: `src/main/resources/META-INF/resources/visita.js`. The embed is **fail-silent**: server errors must never block or break the host page (degraded mode, no HTTP 4xx/5xx retries).
 
 ## 5. Domain admin API
 
@@ -194,6 +194,8 @@ See `src/main/resources/application.properties`.
 ## 15. Common pitfalls
 
 - **Disabled domains** — `TrackingTokenFilter` rejects unknown or disabled domain/token pairs.
+- **Native image JSON** — response records returned by REST endpoints need `@RegisterForReflection` or Jackson serialization fails at runtime (HTTP 500 after successful DB write).
+- **Fail-silent embed** — `visita.js` must never throw to the host or retry HTTP 4xx/5xx; on failure it enters degraded mode and stops server calls.
 - **Page creation** — `ViewsService` auto-creates `Page` only when the domain already exists; register domains first.
 - **Exit auth** — `/api/tracking/exit` validates the domain token from headers or from `domainToken` / `domainHostname` in the JSON body (required for `sendBeacon`, which cannot send custom headers). `visita.js` falls back to `fetch` with `keepalive` when `sendBeacon` is unavailable.
 - **Dashboard dates** — `endDate` query param is exclusive (start of next day).

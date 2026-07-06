@@ -26,6 +26,7 @@ class VisitaAnalytics {
             isInitialized: false,
             isUnloading: false,
             trackingDisabled: false,
+            degraded: false,
             lastActivity: Date.now(),
             retryCount: 0
         };
@@ -86,7 +87,7 @@ class VisitaAnalytics {
                 token: null
             };
         }
-        this.init();
+        this.init().catch((error) => this.handleInitializationError(error));
     }
 
     /**
@@ -130,19 +131,18 @@ class VisitaAnalytics {
             }
             if (this.isPathIgnored()) {
                 this.state.trackingDisabled = true;
-                this.state.isInitialized = true;
                 console.info('Visita: tracking disabled for ignored path');
                 return;
             }
             this.loadVisitaStats();
             this.setupEventListeners();
             await this.startSession();
-
-            this.state.isInitialized = true;
             this.logSystemStatus();
         } catch (error) {
-            console.error('Failed to initialize VisitaAnalytics:', error);
+            console.warn('Visita: initialization failed, host unaffected:', error);
             this.handleInitializationError(error);
+        } finally {
+            this.state.isInitialized = true;
         }
     }
 
@@ -193,37 +193,39 @@ class VisitaAnalytics {
     }
 
     async loadVisitaStats() {
-        let visitaStatsElm = document.querySelector('visita-stats');
-        console.log('Visita stats Element!', visitaStatsElm);
-        const url = this.getBaseUrl();
-        console.log('Visita url', url);
-        const config = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
-                'VISITA-DOMAIN-TOKEN': this.credentials.token
-            },
-            credentials: 'omit'
-        };
-        const response = await fetch(`${url}/domain/${encodeURIComponent(this.credentials.domain)}/page/${encodeURIComponent(window.location.pathname)}/info`, config);
+        try {
+            const visitaStatsElm = document.querySelector('visita-stats');
+            const url = this.getBaseUrl();
+            const config = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'VISITA-DOMAIN-HOSTNAME': this.credentials.domain,
+                    'VISITA-DOMAIN-TOKEN': this.credentials.token
+                },
+                credentials: 'omit'
+            };
+            const response = await fetch(`${url}/domain/${encodeURIComponent(this.credentials.domain)}/page/${encodeURIComponent(window.location.pathname)}/info`, config);
 
-        if (response.ok) {
-            const info = await response.json();
-            if (visitaStatsElm) {
-                const infoContainer = document.createElement('div');
-                infoContainer.innerHTML = `<span class="label">Tempo Médio:</span>
-                                        <span class="value">${this.timeFormat(info.avgReadingTime)}</span>
-                                        <span class="label">Visualizações:</span>
-                                        <span class="value">${info.views}</span>
-                `;
-                infoContainer.classList.add('page-info');
-                visitaStatsElm.appendChild(infoContainer);
+            if (response.ok) {
+                const info = await response.json();
+                if (visitaStatsElm) {
+                    const infoContainer = document.createElement('div');
+                    infoContainer.innerHTML = `<span class="label">Tempo Médio:</span>
+                                            <span class="value">${this.timeFormat(info.avgReadingTime)}</span>
+                                            <span class="label">Visualizações:</span>
+                                            <span class="value">${info.views}</span>
+                    `;
+                    infoContainer.classList.add('page-info');
+                    visitaStatsElm.appendChild(infoContainer);
+                }
+                console.debug('Visita: page info loaded', info);
+            } else {
+                console.warn('Visita: page info unavailable', response.status, response.statusText);
             }
-            console.log("INFO", info);
-        } else {
-            console.warn("Error", response.status, response.statusText);
+        } catch (error) {
+            console.warn('Visita: failed to load page info, host unaffected:', error);
         }
     }
 
@@ -242,7 +244,7 @@ class VisitaAnalytics {
      * Start new or resume existing session
      */
     async startSession() {
-        if (this.state.trackingDisabled || this.isPathIgnored()) {
+        if (this.state.degraded || this.state.trackingDisabled || this.isPathIgnored()) {
             return;
         }
 
@@ -327,11 +329,22 @@ class VisitaAnalytics {
                 console.info(`New session created: ${response.id}`);
             }
         } catch (error) {
-            console.error('Failed to create session:', error);
-            if (!this.state.trackingDisabled) {
-                this.createFallbackSession();
-            }
+            console.warn('Visita: failed to create session, host unaffected:', error);
+            this.enterDegradedMode();
         }
+    }
+
+    /**
+     * Stop server calls after an unrecoverable tracking failure.
+     */
+    enterDegradedMode() {
+        if (this.state.degraded) {
+            return;
+        }
+        this.state.degraded = true;
+        this.state.trackingDisabled = true;
+        this.clearSessionData();
+        console.warn('Visita: tracking degraded, host unaffected');
     }
 
     /**
@@ -415,15 +428,20 @@ class VisitaAnalytics {
                     return JSON.parse(body);
                 }
                 
-                console.warn("Error", response.status, response.statusText);
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                console.warn('Visita: request failed', response.status, response.statusText);
+                const httpError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                httpError.status = response.status;
+                throw httpError;
             } catch (error) {
-                console.error("Error", error);
+                if (error.status >= 400) {
+                    console.warn('Visita: server rejected request:', error.message);
+                    throw error;
+                }
                 if (attempt === this.config.RETRY_ATTEMPTS) {
                     throw error;
                 }
-                
-                console.warn(`Request failed (attempt ${attempt}/${this.config.RETRY_ATTEMPTS}):`, error);
+
+                console.warn(`Visita: request failed (attempt ${attempt}/${this.config.RETRY_ATTEMPTS}):`, error);
                 await this.delay(this.config.RETRY_DELAY * attempt);
             }
         }
@@ -494,7 +512,7 @@ class VisitaAnalytics {
      * Register page exit
      */
     async registerExit() {
-        if (this.state.isUnloading || !this.identifiers.visitaId) return;
+        if (this.state.degraded || this.state.isUnloading || !this.identifiers.visitaId) return;
         
         this.state.isUnloading = true;
         console.info(`Registering exit for session: ${this.identifiers.visitaId}`);
@@ -513,14 +531,14 @@ class VisitaAnalytics {
                 { keepalive: true }
             );
         } catch (error) {
-            console.error('Failed to register exit:', error);
+            console.warn('Visita: failed to register exit, host unaffected:', error);
         } finally {
             this.clearSessionData();
         }
     }
 
     async sendPing() {
-        if (this.state.trackingDisabled || !this.identifiers.visitaId) return;
+        if (this.state.degraded || this.state.trackingDisabled || !this.identifiers.visitaId) return;
         const pingData = { 
             id: this.identifiers.visitaId,
             timestamp: Date.now()
@@ -530,7 +548,7 @@ class VisitaAnalytics {
             var response = await this.sendRequest(this.API_ENDPOINTS.PING, pingData , { no_body: true});
             console.debug("Ping sent!", response);
         } catch (error) {
-            console.error('Failed to track page view:', error);
+            console.warn('Visita: failed to send ping, host unaffected:', error);
         }
     }
 
@@ -539,7 +557,7 @@ class VisitaAnalytics {
      * @param {string} url 
      */
     async trackPageView(url) {
-        if (this.state.trackingDisabled || !this.identifiers.visitaId) return;
+        if (this.state.degraded || this.state.trackingDisabled || !this.identifiers.visitaId) return;
 
         const viewData = {
             id: this.identifiers.visitaId,
@@ -564,7 +582,7 @@ class VisitaAnalytics {
                 console.info(`New session created: ${response.id}`);
             }
         } catch (error) {
-            console.error('Failed to track page view:', error);
+            console.warn('Visita: failed to track page view, host unaffected:', error);
         }
     }
 
@@ -623,7 +641,7 @@ class VisitaAnalytics {
      * Check for user inactivity
      */
     checkInactivity() {
-        if (this.state.trackingDisabled) {
+        if (this.state.degraded || this.state.trackingDisabled) {
             return;
         }
 
@@ -687,12 +705,9 @@ class VisitaAnalytics {
      * @param {Error} error 
      */
     handleInitializationError(error) {
-        // Could send error to error tracking service
-        console.error('VisitaAnalytics initialization failed:', error);
-        
-        // Still create basic identifiers for fallback
+        console.warn('Visita: initialization degraded, host unaffected:', error);
         this.loadIdentifiers();
-        this.createFallbackSession();
+        this.enterDegradedMode();
     }
 
     /**
