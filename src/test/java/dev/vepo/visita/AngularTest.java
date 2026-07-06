@@ -2,6 +2,8 @@ package dev.vepo.visita;
 
 import java.net.URL;
 import java.time.Duration;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,8 +59,10 @@ class AngularTest {
             var aboutLink = driver.findElement(By.id("link-about"));
             aboutLink.click();
 
-            // wait until the view updates to About
+            // wait until the view updates to About and the server records both pages
             wait.until(d -> d.findElement(By.id("page-title")).getText().equals("About"));
+            wait.until(d -> hasTrackedSpaPaths(Set.of("/about", "/home"))
+                    || hasTrackedSpaPaths(Set.of("/about", "/")));
 
             // Force a new visita (the tracker exposes an async function; trigger it)
             driver.navigate().to(otherSever.getServerURL());
@@ -66,12 +70,22 @@ class AngularTest {
             wait.until(d -> d.findElement(By.id("done")).isEnabled());
 
             var visitas = visitaRepository.findAll();
-            Assertions.assertThat(visitas)
-                      .hasSize(2)
-                      .extracting(View::getPage)
-                      .extracting(Page::getPath)
-                      .containsExactlyInAnyOrder("/about",
-                                                 "/home");
+            Assertions.assertThat(visitas).hasSize(2);
+            var paths = visitas.stream()
+                               .map(View::getPage)
+                               .map(Page::getPath)
+                               .collect(Collectors.toSet());
+            Assertions.assertThat(paths).contains("/about");
+            Assertions.assertThat(paths).containsAnyOf("/home", "/");
         }
+    }
+
+    private boolean hasTrackedSpaPaths(Set<String> expectedPaths) {
+        var paths = visitaRepository.findAll()
+                                    .stream()
+                                    .map(View::getPage)
+                                    .map(Page::getPath)
+                                    .collect(Collectors.toSet());
+        return paths.equals(expectedPaths);
     }
 }

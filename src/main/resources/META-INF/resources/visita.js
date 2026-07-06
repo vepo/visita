@@ -137,12 +137,14 @@ class VisitaAnalytics {
             this.loadVisitaStats();
             this.setupEventListeners();
             await this.startSession();
-            this.logSystemStatus();
         } catch (error) {
             console.warn('Visita: initialization failed, host unaffected:', error);
             this.handleInitializationError(error);
         } finally {
             this.state.isInitialized = true;
+            if (!this.state.degraded && !this.state.trackingDisabled) {
+                this.logSystemStatus();
+            }
         }
     }
 
