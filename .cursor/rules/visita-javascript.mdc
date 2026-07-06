@@ -16,8 +16,9 @@ alwaysApply: false
 
 - Keep the script **self-contained** — no npm build step.
 - Use `sendBeacon` for `/api/tracking/exit` with fetch fallback.
-- Retry failed requests (existing `RETRY_ATTEMPTS` pattern).
+- Retry **network failures only** (`RETRY_ATTEMPTS`); do not retry HTTP 4xx/5xx.
 - SPA support via `MutationObserver` — preserve when changing route detection.
+- **Fail-silent** — never throw to the host page; use `console.warn` for recoverable failures; enter degraded mode and stop server calls on unrecoverable errors.
 
 ## When changing tracking behavior
 
@@ -30,3 +31,4 @@ alwaysApply: false
 
 - Break backward compatibility for in-flight sessions without a migration plan.
 - Store secrets in the client beyond the per-domain token (expected in `data-token`).
+- Block, throw to, or otherwise affect the host application when the Visita server fails.
