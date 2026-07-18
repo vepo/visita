@@ -1,0 +1,164 @@
+---
+description: Mandatory development process — analysis, architecture, tasks, approval, TDD
+alwaysApply: true
+---
+
+# Development process (mandatory)
+
+No production or test code until phases 1-4 are complete for the current feature entry.
+
+## Strict phase gate
+
+Phases are sequential and mandatory.
+
+```
+planned -> architecture-ready -> tasks-ready -> approved -> in-progress -> done
+```
+
+| Action | Phase | Allowed edits |
+|--------|-------|----------------|
+| Feature analysis, feature questions (FQn) | 1 | `feature/*.md`, `docs/**`, domain spec |
+| Architecture design, architecture questions (AQn) | 2 | `feature/*.md`, `docs/**`, domain spec, `ARCHITECTURE.md` |
+| Task break (Tasks + Test coverage + Feature checklist) | 3 | `feature/*.md` |
+| User approves task IDs | 4 | `feature/*.md` (record approval) |
+| TDD implementation | 5 | `src/main/**`, `src/test/**`, docs as needed |
+
+### Open question kinds
+
+| Kind | Prefix | Phase | Decides |
+|------|--------|-------|---------|
+| Feature question | FQn | 1 | Product/domain behavior |
+| Architecture question | AQn | 2 | Packages, layers, routes, schema, technical trade-offs |
+
+### Answering questions is not development approval
+
+Answering FQ/AQ only updates the feature entry and architecture. It does not authorize coding.
+
+### Manual acceptance only (mandatory)
+
+Feature coding starts only after explicit user approval with task IDs (phase 4).
+
+Examples that count:
+
+- "Approve T1-T5"
+- "Go ahead with T1, T2"
+- "Start development for T1-T6"
+
+Examples that do not count:
+
+- "Implement it" without task IDs
+- Answering FQ/AQ
+
+### Impact review when answers arrive (mandatory)
+
+When the user answers FQ/AQ:
+
+1. Record the answer in the feature doc.
+2. Re-check and update impacted sections: impact, risks, checklist, tasks, test coverage, domain spec, `ARCHITECTURE.md`, and `dev-import.sql` expectations when relevant.
+3. Add new FQ/AQ if needed.
+4. Present deltas and stop if blocking questions remain open.
+
+After all blocking FQ/AQ are answered, complete phase 3 and stop for explicit task approval.
+
+## Working code invariant
+
+Never finish with non-working code.
+
+| Situation | Required action |
+|-----------|-----------------|
+| Task/session ending | `./mvnw -B clean test` green (see `static-analysis.mdc`) |
+| Approved tasks incomplete | Keep status `in-progress` |
+| Partial work breaks build/tests | Fix forward or revert your partial changes |
+| Cannot finish in one session | Leave `in-progress` with implementation notes and keep tree green |
+
+Forbidden:
+
+- Marking `done` with failing tests.
+- Weakening tests only to force green.
+
+## Five phases
+
+| Phase | Agent may | Agent must not |
+|-------|-----------|----------------|
+| 1. Feature analysis | Create/update `feature/<slug>.md`, define/review FQ | Write `src/main/**` or `src/test/**` |
+| 2. Architecture design | Design packages/routes/schema, define/review AQ, update `ARCHITECTURE.md` if needed | Start implementation |
+| 3. Task break | Define checklist, tasks, and test coverage | Start implementation |
+| 4. Development approved | Record approval line with task IDs; set `approved` | Implement before approval |
+| 5. Development (TDD) | Implement approved tasks only (red/green/refactor) | Implement unapproved tasks or skip tests |
+
+## Phase 1 - Feature analysis
+
+Required for new behavior, route/schema change, cross-package refactor, or non-trivial bug fix.
+
+Exit criteria:
+
+- Feature entry created/updated with summary, impact, checklist, and open/answered FQ.
+- Blocking FQ resolved.
+- No production/test code edits yet.
+
+## Phase 2 - Architecture design
+
+Define the concrete architecture for the feature in the entry:
+
+- Packages and layer flow (`Endpoint -> Service -> Repository`)
+- Route changes
+- Schema/migration changes
+- Dev seed impact (`dev-import.sql`)
+- Test strategy
+
+Exit criteria:
+
+- Architecture section complete.
+- Blocking AQ resolved.
+- Status `architecture-ready`.
+
+## Phase 3 - Task break
+
+Add to changelog entry:
+
+- Feature checklist (`FC1`, `FC2`, ..., `FCdev` when applicable)
+- Tasks (`T1`, `T2`, ..., `Tdev` when applicable)
+- Test coverage mapping (`TC1`, `TC2`, ...)
+
+Set status `tasks-ready` and stop.
+
+## Phase 4 - Development approved
+
+Record:
+
+```markdown
+**Development approval:** approved YYYY-MM-DD — tasks: T1, T3
+```
+
+Set status `approved`. Implement only approved task IDs.
+
+## Phase 5 - Development (TDD)
+
+Precondition: status `approved` with development approval line.
+
+For each approved task:
+
+1. Red: write failing test.
+2. Green: minimal production code.
+3. Refactor: improve while keeping tests green.
+4. Mark task/checklist/test coverage when verified.
+5. Update `dev-import.sql` for user-facing behavior when relevant.
+
+Finish requirements:
+
+1. Approved tasks completed.
+2. Checklist rechecked (including `FCdev` when relevant).
+3. `./mvnw -B clean test` passes.
+4. `ReadLints` clean on edited paths.
+5. Required docs updated (`docs/domain-specification.md`, `ARCHITECTURE.md`, and feature entry as needed).
+
+## Status values
+
+| Status | Meaning |
+|--------|---------|
+| `planned` | Feature analysis in progress |
+| `architecture-ready` | Architecture complete; ready for task break |
+| `tasks-ready` | Awaiting explicit task approval |
+| `approved` | User approved tasks; code not started |
+| `in-progress` | TDD implementation ongoing |
+| `done` | Implemented, validated, and documented |
